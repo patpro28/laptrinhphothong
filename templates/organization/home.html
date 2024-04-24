@@ -1,0 +1,122 @@
+{% extends "common-content.html" %}
+
+{% block content_js_media %}
+    <script type="text/javascript">
+        $(function () {
+            $('.leave-organization').click(function () {
+                return confirm('{{ _("Are you sure you want to leave this organization?") }}\n' +
+                    {% if organization.is_open %}
+                        '{{ _("You will have to rejoin to show up on the organization leaderboard.") }}'
+                    {% else %}
+                        '{{ _("You will have to request membership in order to join again.") }}'
+                    {% endif %}
+                );
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content_media %}
+<link rel="stylesheet" href="{{ static('semantic/components/comment.min.css') }}">
+<style>
+    .msg p {
+        word-wrap: break-word;
+        word-break: break-word;
+    }
+</style>
+{% endblock content_media %}
+
+{% block body %}
+<div class="flex flex-col lg:flex-row-reverse">
+    <div class="lg:basis-1/4">
+        <div class="flex flex-col w-full p-4">
+            <div class="flex p-2 text-2xl font-bold text-white bg-black rounded-t-md">
+                <div class="flex-1 ">{{ _('Manage') }}</div>
+                <div class=""><i class="fa-solid fa-pen-to-square"></i></div>
+            </div>
+            <ul class="flex flex-col font-semibold border divide-y rounded-b-md">
+                {% if request.user.is_authenticated %}
+                    {% if request.user in organization %}
+                    <li class="p-2">
+                        <form method="post" class="ui form" action="{{ url('leave_organization', organization.id, organization.slug) }}">
+                            {% csrf_token %}
+                            <div class="ui field">
+                                <button type="submit" class="text-red-500 ui fluid button leave-organization">
+                                    {{ _('Leave organization') }}
+                                </button>
+                            </div>
+                        </form>
+                    </li>
+                    {% elif organization.is_open %}
+                    <li class="p-2">
+                        <form method="post" class="ui form" action="{{ url('join_organization', organization.id, organization.slug) }}">
+                            {% csrf_token %}
+                            <div class="ui field">
+                                <button type="submit" class="ui fluid positive button" value="">
+                                    {{ _('Join organization') }}
+                                </button>
+                            </div>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li class="p-2">
+                        <a href="{{ url('request_organization', organization.id, organization.slug) }}"
+                           class="ui fluid primary button">{{ _('Request membership') }}</a>
+                    </li>
+                    {% endif %}
+                {% endif %}
+        
+                {% if can_edit %}
+                <li class="p-2">
+                    <a class="ui fluid primary button" href="{{ url('edit_organization', organization.id, organization.slug) }}">{{ _('Edit organization') }}</a>
+                </li>
+            
+                {% if not organization.is_open %}
+                <li class="p-2">
+                    <a class="ui fluid primary button" href="{{ url('organization_requests_pending', organization.id, organization.slug) }}">{{ _('View requests') }}</a>
+                </li>
+                    
+                {% endif %}
+        
+                {% if perms.judge.add_contest %}
+                <li class="p-2">
+                    <a class="ui fluid primary button" href="{{ url('admin:judge_contest_add') }}">{{ _('Create contest') }}</a>
+                </li>
+                {% endif %}
+
+                {% endif %}
+            
+                {% if perms.judge.change_organization %}
+                <li class="p-2">
+                    <a class="ui fluid primary button" href="{{ url('admin:judge_organization_change', organization.id) }}">{{ _('Admin organization') }}</a>
+                </li>
+                {% endif %}
+                <li class="p-2">
+                    <a class="ui fluid primary button" href="{{ organization.get_users_url() }}">{{ _('View members') }}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="flex flex-col p-4 lg:basis-3/4">
+        <div class="flex items-center p-2 text-white bg-black rounded-t-md">
+            <div class="flex-1 text-2xl font-bold">{{ _('Information') }}</div>
+            <div class="">
+                <i class="info circle icon"></i>
+            </div>
+        </div>
+        <div class="p-2 prose border border-black rounded-b-md max-w-none">
+            {% cache 3600 'organization_html' organization.id MATH_ENGINE %}
+                {{ organization.about|markdown('organization-about', MATH_ENGINE)|reference|str|safe }}
+            {% endcache %}
+        </div>
+    </div>
+</div>
+{% endblock body %}
+
+{% block info_float %}
+
+{% endblock %}
+
+{% block description %}
+
+{% endblock %}

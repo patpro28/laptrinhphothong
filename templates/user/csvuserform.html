@@ -1,0 +1,65 @@
+{% extends 'common-content.html' %}
+
+{% block content_js_media %}
+<script>
+  $(document).ready(function() {
+    $('select[name="organization"]').select2({
+      placeholder: "{{ _('Select organization') }}",
+    });
+  })
+</script>
+{% endblock content_js_media %}
+
+{% block body %}
+<form action="" method="post" class="grid grid-cols-1 gap-6 m-10" enctype="multipart/form-data">
+  {% csrf_token %}
+  <label for="{{ form.organization.id_for_label }}" class="block">
+    {% if form.organization.errors %}
+      <ul class="block text-red-500">
+        {% for error in form.organization.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <span class="text-gray-900">
+      {{ form.organization.label }}
+    </span>
+    <div class="mt-1">
+      {{ form.organization }}
+    </div>
+  </label>
+  <label class="relative block" for="{{ form.csv_file.id_for_label }}">
+    {% if form.csv_file.errors %}
+      <ul class="block text-red-500">
+        {% for error in form.csv_file.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <span class="text-gray-900">
+      {{ form.csv_file.label }}
+    </span>
+    <input type="file" class="block w-full mt-1" name="csv_file">
+  </label>
+  <div class="">
+    <input type="submit" value="Submit" class="text-2xl min-w-[20rem] cursor-pointer focus:ring focus:ring-blue-500 shadow-lg btn-default transition-all ease-in-out duration-500 hover:bg-[100%_0%] py-2 font-bold text-center text-white rounded-2xl">
+  </div>
+</form>
+<div class="">
+  <div class="text-3xl font-bold">
+    Hướng dẫn tạo file csv
+  </div>  
+  <div class="">
+    <div class="text-xl">
+      Bước 1: Tạo file Google Sheet với cấu trúc như sau (tiêu đề của 3 cột đầu cần đúng chính xác):      
+    </div>
+    <img src="{{ static('csv1.png') }}" alt="">
+  </div>
+  <div class="">
+    <div class="text-xl">
+      Bước 2: Tải xuống về định dạng (.csv)
+    </div>
+    <img src="{{ static('csv2.png') }}" alt="">
+  </div>
+</div>
+{% endblock body %}

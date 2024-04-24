@@ -1,0 +1,28 @@
+{% extends "grappelli/dashboard/module.html" %}
+{% load i18n %}
+{% block module_content %}
+    {% spaceless %}
+    {% for child in module.children %}
+        <div class="grp-module" id="module-{{child.name|lower}}">
+            {% for model in child.models %}
+                <div class="flex items-center grp-row">
+                    {% if model.admin_url %}
+                        <a class="flex-1 text-lg text-black cursor-pointer hover:text-indigo-500" href="{{ model.admin_url }}"><strong>{{ model.title }}</strong></a>
+                    {% else %}
+                        <div class="flex-1 text-lg text-black">{{ model.title }}</div>
+                    {% endif %}
+                    {% if model.add_url %}
+                        <ul class="grp-actions">
+                            {% if model.add_url %}
+                                <li class="grp-icon grp-add-link">
+                                    <a class="hover:text-indigo-500 group" href="{{ model.add_url }}" title="{% trans "Add" %}"><i class="fa-solid fa-circle-plus group-hover:scale-125"></i></a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    {% endspaceless %}
+{% endblock %}

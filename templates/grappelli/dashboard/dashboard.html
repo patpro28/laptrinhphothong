@@ -1,0 +1,27 @@
+{% load i18n grp_dashboard_tags %}
+
+{{ dashboard.media }}
+
+<div class="flex items-start p-4 space-x-4">
+    <div class="basis-1/2" id="column_1">
+        {% for module in dashboard.children %}
+            {% if module.column == 1 %}
+                {% grp_render_dashboard_module module forloop.counter %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="basis-1/4" id="column_2">
+        {% for module in dashboard.children %}
+            {% if module.column == 2 %}
+                {% grp_render_dashboard_module module forloop.counter %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="basis-1/4" id="column_3">
+        {% for module in dashboard.children %}
+            {% if module.column == 3 %}
+                {% grp_render_dashboard_module module forloop.counter %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

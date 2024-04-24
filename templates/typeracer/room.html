@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block body %}
+{% include 'typeracer/typeracer.html' %}
+{% endblock body %}
+
+{% block bodyend %}
+<script>
+  var start = 0
+  const content = document.querySelector('#type_content')
+  let summary
+  let arrayQuote
+  const typeInput = document.querySelector('#type')
+  typeInput.onpaste = e => e.preventDefault();
+  const QUOTE_API_URL = '{{ url("typeracer:get_quote", room.id) }}'
+  const timer = document.querySelector('#timer')
+
+  function getQuote() {
+    return fetch(QUOTE_API_URL)
+      .then(response => response.json())
+      .then(data => data.content)
+  }  
+
+  async function renderNewQuote() {
+    const quote = await getQuote()
+    content.innerHTML = ''
+    quote.split('').forEach(char => {
+      const characterSpan = document.createElement('span')
+      const charText = document.createTextNode(char)
+      characterSpan.appendChild(charText)
+      content.appendChild(characterSpan)
+    })
+    typeInput.disabled = false
+    typeInput.focus()
+    typeInput.value = null
+    arrayQuote = content.querySelectorAll('span')
+    summary = arrayQuote.length
+    startTimer()
+    setSpeed()
+  }
+
+  var limit = {{ room.contest.limit }}
+  var startTime1 = new Date('{{ room.contest.time_start }}')
+
+  window.onload = e => {
+    var startTime = new Date('{{ room.contest.time_start }}')
+    var start = Date.now()
+    var limitTime 
+    if (start < startTime) {
+      limitTime = {{ room.contest.limit }}
+    }
+    else {
+      limitTime = Math.floor({{ room.contest.limit }} - (start - startTime) / 1000)
+    }
+    timer.innerText = limitTime
+    var content = document.querySelector('#type_content')
+    var typeInput = document.querySelector('#type')
+    typeInput.disabled = true
+    if (startTime < Date.now()) {
+      renderNewQuote()
+    } else {
+      var time = Math.round((startTime - Date.now()) / 1000);
+      var countdownToStart = setInterval(function() {
+        if (time <= 0) {
+          renderNewQuote()
+          clearInterval(countdownToStart)
+        }
+        content.innerHTML = `The race will start in ${time} seconds`
+        time--
+      }, 1000)
+    }
+  }
+
+  const speed = document.querySelector('#speed')
+  const car = document.querySelector('#car_' + window.user.id)
+  let startTime
+  let countDown
+  let speedCount
+  let carUpdate
+
+  function saveResult(speed, progress, time) {
+    clearInterval(countDown)
+    clearInterval(speedCount)
+    content.innerHTML = 'Finished'
+    typeInput.value = null
+    typeInput.disabled = 'disabled'
+    $.ajax({
+      type: 'POST',
+      url: '{{ url("typeracer:finish_contest") }}',
+      data: {
+        user: window.user.id,
+        contest: '{{ room.contest.id }}',
+        progress: progress,
+        speed: speed,
+        time: time
+      }
+    })
+    setTimeout(function() {
+      window.location.reload();
+    }, 2000);
+  }
+
+  typeInput.addEventListener('input', function() {
+    typeInput.classList.remove('incorrect')
+    const arrayValue = typeInput.value.split('')
+    var i = start
+    while (i < arrayQuote.length && arrayQuote[i] != ' ') {
+      arrayQuote[i].classList.remove('correct')
+      arrayQuote[i].classList.remove('incorrect')
+      i += 1
+    }
+    let correct = true
+    arrayValue.forEach((character, index) => {
+      if (correct) {
+        if (start + index == arrayQuote.length && character == ' ') {
+          car.style.left = '98%'
+          start = start + index
+          speed.innerText = calSpeed()
+          saveResult(speed.innerText, 100, new Date() - startTime1)
+        } else {
+          const answer = arrayQuote[index + start].innerText
+          if (character === answer) {
+            arrayQuote[index + start].classList.add('correct')
+            if (answer == ' ') {
+              typeInput.value = null
+              start = index + start + 1
+            }
+          } else {
+            arrayQuote[index + start].classList.add('incorrect')
+            typeInput.classList.add('incorrect')
+            correct = false
+          }
+        }
+      }
+    })
+  })
+
+  function setCarAnimate(id, progress) {
+    thiscar = document.querySelector('#car_' + id)
+    thiscar.style.left = progress + '%'
+  }
+
+  function calSpeed() {
+    return Math.floor(start * 60 * 1000 / (new Date() - startTime1))
+  }
+
+  function setSpeed() {
+    speedCount = setInterval(() => {
+      speed.innerText = calSpeed()
+      $.ajax({
+        type: 'POST',
+        url: '{{ url("typeracer:update_progress") }}',
+        data: {
+          user: window.user.id,
+          progress: Math.floor(start * 100 / summary),
+          contest: '{{ room.contest.id }}',
+          speed: speed.innerText,
+        },
+      })
+    }, 2000)
+  }
+
+  function startTimer() {
+    var time = parseInt(timer.innerText)
+    countDown = setInterval(() => {
+      timer.innerText = time
+      time--
+      if (time <= 0) {
+        saveResult(calSpeed(), Math.floor(start * 100 / summary), {{ room.contest.limit }})
+      }
+    }, 1000)
+  }
+
+  function getTimerTime() {
+    return Math.floor((new Date() - startTime1) / 1000)
+  }
+
+  function addNewParticipation(user) {
+    $.ajax({
+      type: 'GET',
+      url: `{{ url("typeracer:new_user") }}`,
+      data: {
+        user: user,
+      },
+      success: function(response) {
+        $('#list').append(response)
+      }
+    })
+  }
+
+  window.load_dynamic_update = function () {
+    event_dispatcher.on('typocontest_{{ room.contest.id }}', function (message) {
+      setCarAnimate(message.user, message.progress)
+    });
+    event_dispatcher.on('typopartipation_{{ room.contest.id }}', function (message) {
+      addNewParticipation(message.user)
+    });
+    event_dispatcher.on('typocontestresult_{{ room.contest.id }}', function (message) {
+      var order = document.querySelector('#order_' + message.user)
+      order.innerText = message.ranking
+    })
+  }
+  {% if EVENT_LAST_MSG %}
+  $(function () {
+    load_dynamic_update();
+  });
+  {% endif %}
+</script>
+{% endblock bodyend %}

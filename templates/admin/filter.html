@@ -1,0 +1,12 @@
+{% load i18n %}
+<div class="p-2 grp-module">
+	<label class="block">
+		<span class="font-bold text-gray-700">
+			{% blocktrans with title|capfirst as filter_title %}{{ filter_title }}{% endblocktrans %}
+		</span>
+		<select class="block w-full mt-1 border-gray-300 rounded-md shadow-sm grp-filter-choice focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 " data-field-name="{{ field_name }}">
+				{% for choice in choices %}
+		<option value="{{ choice.query_string|iriencode }}"{% if choice.selected %} selected='selected'{% endif %}>{{ choice.display }}</option>{% endfor %}
+		</select>
+	</label>
+</div>

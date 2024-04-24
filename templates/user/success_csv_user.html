@@ -1,0 +1,32 @@
+{% extends 'common-content.html' %}
+
+{% block body %}
+<div class="flex flex-col w-full gap-4 p-10">
+  <div class="">
+    <a href="?download=true" class="w-full px-4 py-2 text-2xl font-bold text-center text-black bg-indigo-500 shadow-lg rounded-2xl">{{ _('Download') }}</a>
+  </div>
+  <table class="w-full text-xl">
+    <thead class="text-white bg-black">
+      <tr>
+        <th class="p-2">{{ _('MSHV') }}</th>
+        <th class="p-2">{{ _('First Name') }}</th>
+        <th class="p-2">{{ _('Last Name') }}</th>
+        <th class="p-2">{{ _('Username') }}</th>
+        <th class="p-2">{{ _('Password') }}</th>
+        <th class="p-2">{{ _('Organization') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for data in update_list %}
+      <tr class="{{ loop.cycle('bg-gray-300', 'bg-gray-500') }} hover:bg-blue-300 font-semibold divide-x hover:text-black">
+        {% for item in data %}
+        <td class="p-2 text-center">
+          {{ item }}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock body %} 

@@ -1,0 +1,90 @@
+{% extends 'common-content.html' %}
+
+{% block media %}
+<style>
+  .active {
+    background-color: blue;
+    color: white;
+  }
+</style>
+{% endblock media %}
+
+{% block js_media %}
+{{ form.media.js }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.11.1/ace.js" integrity="sha512-Xj+aDEioSoftmz378MJZFfIq6vbvt7Y3VxsRyEfMX/UtLWjgVEMT1ICljIwddIMhgVugDx+tn44hUYsiZ63z6Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock js_media %}
+
+{% block body %}
+<form action="" method="post" class="max-w-5xl mx-auto mt-10">
+  {% csrf_token %}
+  <label for="{{ form.description.id_for_label }}" class="block">
+    <span class="text-xl font-bold text-gray-700 ">{{ form.description.label }}</span>
+    <textarea name="description" id="id_description"></textarea>
+    <div class="flex w-full gap-4 mt-4 [&>*]:p-2 [&>*]:text-center">
+      <div class="flex-1 font-bold cursor-pointer rounded-t-md active" id="editor_button" onclick="switch_editor()">Editor</div>
+      <div class="flex-1 font-bold cursor-pointer rounded-t-md" id="preview_button" onclick="switch_preview()">Preview</div>
+    </div>
+    <div class="w-full text-base" id="edit_description"></div>
+    <div class="w-full text-base min-h-[30rem] border rounded-b-md hidden p-2 prose max-w-none" id="preview"></div>
+  </label>
+  <input type="submit" value="Submit" class="w-full p-2 mt-4 font-bold text-white bg-blue-500 rounded-md cursor-pointer">
+</form>
+{% endblock body %}
+
+{% block bodyend %}
+{{ super() }}
+<script>
+  var editor = ace.edit('edit_description');
+  var textarea = $('textarea[name="description"]').hide();
+  var preview = document.querySelector('#preview')
+  var preview_button = document.querySelector('#preview_button')
+  var editorElement = document.querySelector('#edit_description')
+  var editor_button = document.querySelector('#editor_button')
+  editor.setTheme('ace/theme/monokai');
+  editor.session.setMode('ace/mode/markdown');
+  editor.setOptions({
+    minLines: 20,
+    maxLines: Infinity,
+  })
+  editor.session.on('change', function(delta) {
+    textarea.val(editor.getValue());
+  })
+  function switch_editor() {
+    preview.classList.add('hidden')
+    editorElement.classList.remove('hidden')
+    editor_button.classList.add('active')
+    preview_button.classList.remove('active')
+  }
+  
+  let promise = Promise.resolve()
+
+  function update_math(code) {
+    promise = promise.then(
+      () => MathJax.typesetPromise(code()))
+      .catch((err) => console.log('Typeset failed: ' + err.message))
+    return promise
+  }
+  
+  function switch_preview() {
+    $.ajax({
+      type: 'POST',
+      url: '/widgets/preview/problem',
+      data: {
+        content: editor.getValue()
+      },
+      success: function(response) {
+        update_math(() => {
+          preview.innerHTML = response
+          return [preview]
+        })
+      },
+    })
+    editorElement.classList.add('hidden')
+    preview.classList.remove('hidden')
+    editor_button.classList.remove('active')
+    preview_button.classList.add('active')
+  }
+  
+</script>
+
+{% endblock bodyend %}

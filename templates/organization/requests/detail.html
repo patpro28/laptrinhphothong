@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block media %}
+    <style>
+        th {
+            text-align: left
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <table class="w-full border">
+        <tbody class="divide-y">
+            <tr class="divide-x [&>*]:p-2">
+                <th>{{ _('User:') }}</th>
+                <td>{{ link_user(object.user) }}</td>
+            </tr>
+            <tr class="divide-x [&>*]:p-2">
+                <th>{{ _('Organization:') }}</th>
+                <td>
+                    {% with org=object.organization %}
+                        <a href="{{ org.get_absolute_url() }}">{{ org.name }}</a>
+                    {% endwith %}
+                </td>
+            </tr>
+            <tr class="divide-x [&>*]:p-2">
+                <th>{{ _('Time:') }}</th>
+                <td>{{ object.time|date(_("N j, Y, g:i a")) }}</td>
+            </tr>
+            <tr class="divide-x [&>*]:p-2">
+                <th colspan="2">{{ _('Reason:') }}</th>
+            </tr>
+            <tr class="divide-x [&>*]:p-2">
+                <td colspan="2" style="padding-left: 2em">{{ object.reason }}</td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

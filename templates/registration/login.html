@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <div class="flex justify-center w-full bg-transparent">
+        <div class="w-full p-10 mt-4 rounded-md md:w-3/5 transition-[width] duration-300 ease-in-out lg:w-2/5">
+            <div>
+                <img class="w-auto h-20 mx-auto" src="{{ static('icons/logo.svg') }}" alt="Your Company">
+                <h2 class="mt-6 text-3xl font-bold text-center text-gray-900">Sign in to your account</h2>
+            </div>
+            <form class="p-8 mt-8 space-y-6 bg-white rounded-lg" action="" method="POST">
+                <div class="space-y-4 shadow-sm">
+                {% csrf_token %}
+                {% if form.errors %}
+                <div id="form-errors">
+                    <p class="error">{{ _('Invalid username or password.') }}</p>
+                </div>
+                {% endif %}
+                  <div>
+                    <label for="username" class="text-lg font-semibold text-gray-700">{{ _('Username') }}</label>
+                    <div class="relative">
+                      <input id="username" name="username" type="text" autocomplete="username" required class="relative block w-full px-10 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none peer focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500" placeholder="Username">
+                      <span class="absolute left-0 z-10 w-8 translate-x-1/2 -translate-y-1/2 opacity-50 peer-focus:opacity-100 top-1/2">
+                        <i class="fa-solid fa-user"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <label for="password" class="text-lg font-semibold text-gray-700">{{ _('Password') }}</label>
+                    <div class="relative">
+                      <input id="password" name="password" type="password" autocomplete="current-password" required class="relative block w-full px-10 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none peer focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500" placeholder="Password">
+                      <span class="absolute left-0 z-10 w-8 translate-x-1/2 -translate-y-1/2 opacity-50 peer-focus:opacity-100 top-1/2">
+                        <i class="fa-solid fa-lock"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+          
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <input id="remember-me" name="remember-me" type="checkbox" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                    <label for="remember-me" class="block ml-2 text-sm text-gray-900">Remember me</label>
+                  </div>
+          
+                  <div class="text-sm">
+                    <a href="{{ url('password_reset') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
+                  </div>
+                </div>
+          
+                <div>
+                  <button type="submit" class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <i class="text-indigo-500 fa-solid fa-lock-open group-hover:text-indigo-400"></i>
+                    </span>
+                    Sign in
+                  </button>
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+              </form>
+              
+              {% if form.has_google_auth or form.has_facebook_auth or form.has_github_auth %}
+                <h4>{{ _('Or log in with...') }}</h4>
+                <div>
+                    {% if form.has_google_auth %}
+                        <a href="{{ url('social:begin', "google-oauth2") }}?next={{ next }}" class="social google-icon">
+                            <i class="fa fa-google-plus-square"></i>
+                        </a>
+                    {% endif %}
+                    {% if form.has_facebook_auth %}
+                        <a href="{{ url('social:begin', "facebook") }}?next={{ next }}" class="social facebook-icon">
+                            <i class="fa fa-facebook-square"></i>
+                        </a>
+                    {% endif %}
+                    {% if form.has_github_auth %}
+                        <a href="{{ url('social:begin', "github-secure") }}?next={{ next }}" class="social github-icon">
+                            <i class="fa fa-github-square"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

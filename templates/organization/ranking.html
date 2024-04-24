@@ -1,0 +1,31 @@
+{% block content_media %}
+
+{% endblock content_media %}
+
+{% block ranking_js %}
+
+{% endblock ranking_js %}
+
+{% if page_obj and page_obj.has_other_pages() %}
+    <div class="top-pagination-bar user-pagination">
+        {% include "list-pages.html" %}
+    </div>
+{% endif %}
+
+<div id="common-content">
+    <div id="content-left" class="users">
+        {% block before_users_table %}{% endblock %}
+
+        <div class="h-scrollable-table">
+            <table id="users-table" class="table">
+                {% include 'organization/ranking-table.html' %}
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if page_obj and page_obj.has_other_pages() %}
+    <div class="bottom-pagination-bar">
+        {% include "list-pages.html" %}
+    </div>
+{% endif %}

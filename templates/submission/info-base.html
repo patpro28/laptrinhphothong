@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block media %}
+<link rel="stylesheet" href="{{ static('semantic/components/accordion.min.css') }}">
+<link rel="stylesheet" href="{{ static('semantic/components/dropdown.min.css') }}">
+<link rel="stylesheet" href="{{ static('semantic/components/transition.min.css') }}">
+{% endblock media %}
+
+{% block header %}
+    <span class="inline-flex flex-col items-end">
+        <span class="text-sm text-gray-400 text-end">{{ submission.date|date(_("N j, Y, g:i a")) }}
+            {% with can_edit=submission.problem.is_editable_by(request.user) %}
+                {%- if can_edit and submission.judged_on %}
+                    on {{ submission.judged_on.name }}
+                {% endif %}
+                <br>
+                <span>{{ submission.language }}</span>
+                {% if can_edit %}
+                    [<a class="text-blue-500 hover:text-blue-700" href="{{ url('admin:judge_submission_change', submission.id) }}">{{ _('Admin') }}</a>]
+                {% endif %}
+            {% endwith %}
+        </span>
+    </span>
+{% endblock %}

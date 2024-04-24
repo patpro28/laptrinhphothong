@@ -1,0 +1,154 @@
+{% extends "user/user-base.html" %}
+
+{% block user_media %}
+    {% include "timezone/media-css.html" %}
+    {{ form.media.css }}
+{% endblock %}
+
+{% block js_media %}
+    {% include "timezone/media-js.html" %}
+    {{ form.media.js }}
+    <script src="{{ static('libs/clipboard/clipboard.js') }}"></script>
+    <script src="{{ static('libs/clipboard/tooltip.js') }}"></script>
+{% endblock %}
+
+{% block title_ruler %}{% endblock %}
+
+{% block action_row %}
+    {% set tab = 'edit' %}
+    {% set user = request.user %}
+    {% include "user/user-tabs.html" %}
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <div class="flex flex-col w-full p-4 my-4 border rounded-md">
+            <div class="flex">
+                <div class="flex gap-2 basis-1/2">
+                    <div class="basis-1/2">
+                        <img src="{{ gravatar(request.user, 200) }}" alt="{{ request.user.username }}" class="w-40 h-40 border rounded-lg">
+                    </div>
+                    <div class="flex flex-col gap-1 py-2 basis-1/2">
+                        <div class="text-3xl font-semibold">
+                            {% if request.user.name %}
+                                {{ request.user.name }}
+                            {% else %}
+                                {{ request.user.username }}
+                            {% endif %}
+                        </div>
+                        <div class="text-lg">
+                            @{{ request.user.username }}
+                        </div>
+                        <div class="font-semibold text-gray-400">
+                            {{ _('Last seen')}} {{ relative_time(profile.last_access) }}
+                        </div>
+                        <a href="http://www.gravatar.com/" title="{{ _('Change your avatar') }}" target="_blank" class="px-4 py-2 text-white bg-blue-500 rounded-md" rel="noopener">
+                            <i class="fa-solid fa-camera"></i>
+                            <span class="ml-4">{{ _('Change avatar') }}</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-2 basis-1/2">
+                    <div class="px-2 py-0.5 font-bold text-white bg-gray-500 rounded-md">{{ request.user.display_rank }}</div>
+                    <div class="text-sm text-gray-700">{{ _('Joined in')}} {{ profile.date_joined|utc|date('Y-M-d') }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="flex w-full gap-1 border-b">
+            <div class="p-2 -mb-px text-lg font-semibold border border-b-white rounded-t-md">Settings</div>
+        </div>
+        <form id="edit-form" action="" method="post" class="p-4 border !border-t-white">
+            {% if form.non_field_errors() %}
+            <div class="flex flex-col">
+                {{ form.non_field_errors() }}
+            </div>
+            {% endif %}
+
+            {% csrf_token %}
+            <label for="{{ form.first_name.id_for_label }}" class="block">
+                <span class="text-gray-700">{{ form.first_name.label }}</span>
+                <input type="text" name="first_name" {% if profile.first_name %}value="{{ profile.first_name }}"{% endif %} id="{{ form.first_name.id_for_label }}" class="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="First name">
+                {% if form.first_name.help_text %}
+                <div class="text-sm text-gray-500">
+                    {{ form.first_name.help_text }}
+                </div>
+                {% endif %}
+            </label>
+            <label for="{{ form.last_name.id_for_label }}" class="block">
+                <span class="text-gray-700">{{ form.last_name.label }}</span>
+                <input type="text" name="last_name" {% if profile.last_name %}value="{{ profile.last_name }}"{% endif %} id="{{ form.last_name.id_for_label }}" class="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Last name">
+                {% if form.last_name.help_text %}
+                <div class="text-sm text-gray-500">
+                    {{ form.last_name.help_text }}
+                </div>
+                {% endif %}
+            </label>
+            <label for="{{ form.email.id_for_label }}" class="block">
+                <span class="text-gray-700">{{ form.email.label }}</span>
+                <input type="email" name="email" {% if profile.email %}value="{{ profile.email }}"{% endif %} id="{{ form.email.id_for_label }}" class="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Email address">
+                {% if form.email.help_text %}
+                <div class="text-sm text-gray-500">
+                    {{ form.email.help_text }}
+                </div>
+                {% endif %}
+            </label>
+            <div style="padding-top:0.5em" class="block-header">{{ _('Self-description') }}:</div>
+            {{ form.about }}
+            <hr>
+
+            <div class="settings" style="padding-top:0.7em">
+                <table class="w-full table-auto">
+                    <tr title="{{ _('Select your closest major city') }}">
+                        <td><label class="inline-header grayed">{{ _('Timezone') }}:</label></td>
+                        <td><span class="fullwidth">{{ form.timezone }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><label class="inline-header grayed">{{ _('Language') }}:</label></td>
+                        <td><span class="fullwidth">{{ form.language }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><label class="inline-header grayed">{{ _('Editor theme') }}:</label></td>
+                        <td><span class="fullwidth">{{ form.ace_theme }}</span></td>
+                    </tr>
+                </table>
+            </div>
+            <hr>
+            <div class="settings" style="padding-top:0.7em">
+                <table class="w-full">
+                    {% if form.newsletter %}
+                        <tr><td>
+                            {{ form.newsletter }}
+                            <label for="id_newsletter" style="float: unset" class="inline-header grayed">
+                                    {{- _('Notify me about upcoming contests') -}}
+                            </label>
+                        </td></tr>
+                    {% endif %}
+                    <tr><td>
+                        {{ form.test_site }}
+                        <label for="id_test_site" style="float: unset" class="inline-header grayed">
+                            {{- form.test_site.label -}}
+                        </label>
+                    </td></tr>
+                    <tr><td>
+                        
+                    </td></tr>
+                    <tr><td>
+                        <a href="{{ url('password_change') }}" class="inline-header">
+                            {{ _('Change your password') }}
+                        </a>
+                    </td></tr>
+                    {% if can_download_data %}
+                        <tr><td>
+                            <a href="{{ url('user_prepare_data') }}" class="inline-header">
+                                {{ _('Download your data') }}
+                            </a>
+                        </td></tr>
+                    {% endif %}
+                </table>
+            </div>
+            <hr>
+
+            <input type="submit" class="w-full p-2 mt-4 font-bold text-white bg-blue-500 rounded-md cursor-pointer hover:bg-blue-600" value="{{ _('Update profile') }}">
+        </form>
+    </div>
+{% endblock %}

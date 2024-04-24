@@ -1,0 +1,15 @@
+<div class="comment">
+  <a href="{{ url("user_page", user.username) }}" class="avatar">
+    <img src="{{ gravatar(user, 200) }}">
+  </a>
+  <div class="content">
+      {{ link_user(user) }}
+      <div class="metadata">
+          {{ message.publish_on|date(_("N j, Y, g:i a")) }}
+      </div>
+      <div class="text">
+          {{ message.msg }}
+      </div>
+      <div class="action"></div>
+  </div>
+</div>

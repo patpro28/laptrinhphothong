@@ -1,0 +1,14 @@
+{% macro make_tab(name, fa, url, text) %}
+    <div class="{% if tab == name %}border -mb-px border-black rounded-t-md border-t-4 border-t-blue-500 {% endif %} whitespace-nowrap p-4">
+        {%- if url %}<a href="{{ url }}">{% else %}<span>{% endif -%}
+        <i class="fa-solid {{ fa }}"></i> 
+        <span class="hidden md:inline">{{ text }}</span>
+        {%- if url %}</a>{% else %}</span>{% endif -%}
+    </div>
+{% endmacro %}
+
+<div class="flex-1 mb-4 overflow-x-auto overflow-y-hidden border-b border-black">
+    <div class="flex items-baseline -mb-px">
+        {% block tabs %}{% endblock %}
+    </div>
+</div>

@@ -1,0 +1,272 @@
+{% extends "common-content.html" %}
+
+{% block media %}
+    <link rel="stylesheet" href="{{ static('libs/nouislider.min.css') }}">
+    <link rel="stylesheet" href="{{ static('semantic/components/form.min.css') }}">
+    <link rel="stylesheet" href="{{ static('semantic/components/dropdown.min.css') }}">
+    <link rel="stylesheet" href="{{ static('semantic/components/search.min.css') }}">
+    <link rel="stylesheet" href="{{ static('semantic/components/transition.min.css') }}">
+    <link rel="stylesheet" href="{{ static('semantic/components/checkbox.min.css') }}">
+    <noscript>
+        <style>#category, #types {
+            visibility: visible;
+        }
+        </style>
+    </noscript>
+    {% if not request.in_contest %}
+        <style>
+            #problem-table th {
+                padding: 0;
+            }
+
+            a.hot-problem-link:hover > .hot-problem-count {
+                visibility: visible;
+            }
+
+            span.hot-problem-count {
+                color: #555;
+                font-size: 0.75em;
+                vertical-align: super;
+                visibility: hidden;
+                padding-left: 0.25em;
+                position: relative;
+            }
+
+            ul.problem-list {
+                padding: 0 !important;
+            
+		}
+       	    .type-tag{
+		font-size: 0.8rem;
+		color: #888 !important;	    
+		} 
+	</style>
+    {% endif %}
+{% endblock %}
+
+{% block js_media %}
+    <script>
+        window.point_start = {{point_start}};
+        window.point_end = {{point_end}};
+        window.point_values = {{point_values|json|safe}};
+    </script>
+    {% compress js %}
+        <script src="{{ static('libs/nouislider.min.js') }}" type="text/javascript"></script>
+        <script src="{{ static('libs/wNumb.min.js') }}" type="text/javascript"></script>
+        <script src="{{ static('semantic/components/dropdown.min.js') }}" type="text/javascript"></script>
+        <script src="{{ static('semantic/components/search.min.js') }}" type="text/javascript"></script>
+        <script src="{{ static('semantic/components/transition.min.js') }}" type="text/javascript"></script>
+        <script src="{{ static('semantic/components/checkbox.min.js') }}" type="text/javascript"></script>
+        <script>
+            $(function () {
+                var $form = $('form#filter-form');
+                var $search = $('#search');
+
+                function prep_form() {
+                    $search.prop('disabled', !$search.val());
+                }
+
+                function clean_submit() {
+                    prep_form();
+                    $form.submit();
+                }
+
+                // This is incredibly nasty to do but it's needed because otherwise the select2 steals the focus
+                $search.keypress(function (e) {
+                    if (e.keyCode == 13)
+                        $('#go').click();
+                });
+
+                $('#go').click(clean_submit);
+
+                $('input#full_text, input#hide_solved').click(function () {
+                    prep_form();
+                    ($('<form>').attr('action', window.location.pathname + '?' + $form.serialize())
+                        .append($('<input>').attr('type', 'hidden').attr('name', 'csrfmiddlewaretoken')
+                            .attr('value', $.cookie('csrftoken')))
+                        .attr('method', 'POST').appendTo($('body')).submit());
+                });
+
+            });
+        </script>
+    {% endcompress %}
+    {% if request.in_contest %}
+        {% compress js %}
+            <script src="{{ static('libs/tablesorter.js') }}" type="text/javascript"></script>
+            <script type="text/javascript">
+                $(function () {
+                    $.tablesorter.addParser({
+                        id: 'solvedsort',
+                        is: function (s) {
+                            return false;
+                        },
+                        format: function (s, table, cell, cellIndex) {
+                            return $(cell).attr('solved');
+                        },
+                        type: 'numeric'
+                    });
+
+                    $('#problem-table').tablesorter({
+                        headers: {
+                            0: {
+                                sorter: 'solvedsort'
+                            }
+                        },
+                        textExtraction: function (node) {
+                            node = $(node);
+                            var text = node.text().replace(/^\s+|\s+$/g, '');
+                            return (node.hasClass('p') ? text.replace(/p$/, '') : text);
+                        }
+                    });
+                });
+            </script>
+        {% endcompress %}
+    {% endif %}
+{% endblock %}
+
+{% block title_ruler %}{% endblock %}
+
+{% block action_row %}
+    {% set tab = 'list' %}
+    {% set title = 'Problems' %}
+    {% include "problem/problem-list-tabs.html" %}
+{% endblock %}
+
+{% block body %}
+    {% if page_obj.has_other_pages() %}
+        <div class="top-pagination-bar">{% include "list-pages.html" %}</div>
+    {% endif %}
+
+    <div class="flex flex-col lg:flex-row-reverse">
+        {% block before_table %}{% endblock %}
+        {% if not request.in_contest %}
+            <div class="mb-8 lg:w-1/4">
+                {% include "problem/search-form.html" %}
+                {% if hot_problems %}
+                <div class="grid w-full grid-cols-1 gap-4 mt-4">
+                    <div class="flex items-center p-3 text-lg text-white bg-black rounded-t-md">
+                        <div class="flex-1 font-bold">
+                            {{ _('Hot problems') }}
+                        </div>
+                        <div class="">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                    </div>
+                    <div class="p-2 shadow-md rounded-b-md">
+                        <ul class="problem-list">
+                            {% for problem in hot_problems %}
+                            <li><a href="{{ url('problem_detail', problem.code) }}" class="hot-problem-link">
+                                {{ problem.name }}
+                            </a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div id="content-left" class="flex-1 overflow-x-auto lg:pr-10">
+            <table class="w-full border border-collapse border-black">
+                <thead>
+                <tr class="[&>*]:text-center [&>*]:bg-black [&>*]:text-white [&>*]:py-3 divide-x divide-white">
+                    {% if request.in_contest %}
+                        {% if request.user.is_authenticated %}
+                            <th class="w-10"><i class="fa fa-check"></i></th>
+                        {% endif %}
+                        <th class="">{{ _('Problem') }}</th>
+                        <th class="w-20">{{ _('Points') }}</th>
+                        <th class="w-24">{{ _('Users') }}</th>
+                    {% else %}
+                        {% if request.user.is_authenticated %}
+                            <th class="w-10">
+                                <a href="{{ sort_links.solved }}"><i class="fa fa-check"></i>{{ sort_order.solved }}
+                                </a>
+                            </th>
+                        {% endif %}
+                        <th class="problem">
+                            <a href="{{ sort_links.name }}">{{ _('Problem') }}{{ sort_order.name }}</a>
+                        </th>
+                        <th class="hidden w-40 lg:table-cell">
+                            <a href="{{ sort_links.group }}">{{ _('Category') }}{{ sort_order.group }}</a>
+                        </th>
+                        <th class="w-20">
+                            <a href="{{ sort_links.points }}">{{ _('Points') }}{{ sort_order.points }}</a>
+                        </th>
+                        <th class="w-20">
+                            <a href="{{ sort_links.ac_rate }}">{{ _('AC %%') }}{{ sort_order.ac_rate }}</a>
+                        </th>
+                        <th class="w-20 lg:w-32">
+                            <a href="{{ sort_links.user_count }}">{{ _('Users') }}{{ sort_order.user_count }}</a>
+                        </th>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-300">
+                {% for problem in problems %}
+                    <tr class="divide-x divide-slate-300">
+                        {% if request.user.is_authenticated %}
+                            {% if problem.id in completed_problem_ids %}
+                                <td solved="1" class="text-center">
+                                    <a href="{{ url('user_submissions', problem.code, request.user.username) }}">
+                                        {% if problem.is_public or request.in_contest %}
+                                            <i class="solved-problem-color fa fa-check-circle"></i>
+                                        {% else %}
+                                            <i class="solved-problem-color fa fa-lock"></i>
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            {% elif problem.id in attempted_problems %}
+                                <td solved="0" class="text-center">
+                                    <a href="{{ url('user_submissions', problem.code, request.user.username) }}">
+                                        {% if problem.is_public or request.in_contest %}
+                                            <i class="attempted-problem-color fa fa-minus-circle"></i>
+                                        {% else %}
+                                            <i class="attempted-problem-color fa fa-lock"></i>
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            {% else %}
+                                <td solved="-1" class="text-center">
+                                    {% if problem.is_public or request.in_contest %}
+                                        <i class="unsolved-problem-color fa fa-minus-circle"></i>
+                                    {% else %}
+                                        <i class="unsolved-problem-color fa fa-lock"></i>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        {% endif %}
+                        <td class="">
+                            <div class="flex items-center px-2">
+                                <div class="flex-1 py-2 font-bold">
+                                    <a href="{{ url('problem_detail', problem.code) }}">{{ problem.i18n_name or problem.name }}</a>
+                                </div>
+                            </div>
+                        </td>
+                        {% if not request.in_contest %}
+                        <td class="hidden lg:table-cell">
+                            <div class="p-1 line-clamp-1" title="{{ problem.group.full_name }}"> {{ problem.group.full_name }}</div> 
+                        </td>
+                        {% endif %}
+                        <td class="text-center">{{ problem.points|floatformat }}{% if problem.partial %}p{% endif %}</td>
+                        {% if not request.in_contest %}
+                            <td class="text-center">{{ problem.ac_rate|floatformat(1) }}%</td>
+                        {% endif %}
+                        <td class="text-center">
+                            <a class="text-indigo-600" href="{{ url('ranked_submissions', problem.code) }}">
+                                {% if not request.in_contest or not hide_contest_scoreboard %}
+                                    {{ problem.user_count }}
+                                {% else %}
+                                    ???
+                                {% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+   {% if page_obj.has_other_pages() %}
+       <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
+   {% endif %}
+{% endblock %}

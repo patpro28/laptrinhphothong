@@ -1,0 +1,13 @@
+{% extends "reversion/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if not is_popup and perms.judge.contest_rating %}
+        <li class="px-4 py-2 font-semibold text-white bg-gray-400 rounded-full hover:bg-gray-600">
+            <a href="{% url 'admin:judge_contest_rate_all' %}" class="ratealllink hover:text-white">
+                <i class="fa fa-signal"></i> {% trans "Rate all ratable contests" %}
+            </a>
+        </li>
+    {% endif %}
+{% endblock %}

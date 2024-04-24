@@ -1,0 +1,44 @@
+{% extends 'common-content.html' %}
+
+{% block body %}
+  <form class="p-10 mx-auto" action="" method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table class="w-full">
+      <thead class="text-white bg-black">
+        <tr>
+          <th class="p-2">{{ _('First Name') }}</th>
+          <th class="p-2">{{ _('Last Name') }}</th>
+          <th class="p-2">{{ _('Username') }}</th>
+          <th class="p-2">{{ _('Email') }}</th>
+          <th class="p-2">{{ _('Organization') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for form in formset %}
+        <tr class="">
+          {{ form.mshv }}
+          <td class="p-2 text-center">
+            {{ form.firstname }}
+          </td>
+          <td class="p-2 text-center">
+            {{ form.lastname }}
+          </td>
+          <td class="p-2 text-center">
+            {{ form.username }}
+          </td>
+          <td class="p-2 text-center">
+            {{ form.email }}
+          </td>
+          <td class="p-2 text-center">
+            {{ form.organization }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-4">
+      <button type="submit" class="text-xl min-w-[20rem] cursor-pointer focus:ring focus:ring-blue-500 shadow-lg bg-indigo-500 py-2 font-bold text-center text-white rounded-2xl">Save</button>
+    </div>
+  </form>
+{% endblock body %} 

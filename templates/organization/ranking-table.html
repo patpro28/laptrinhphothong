@@ -1,0 +1,22 @@
+<thead>
+<tr>
+    <th class="header rank">{{ rank_header or _("Rank") }}</th>
+    {% block after_rank_head %}{% endblock %}
+    <th class="header username">{{ _('Username') }}</th>
+    {% block before_point_head %}
+    {% for contest in contests %}
+        <th class="points header"><a href="{{ url('contest_view', contest.key) }}">
+            {{- contest.get_label_for_problem(loop.index0) }}
+            <div class="point-denominator">{{ problem.points }}</div>
+        </a></th>
+    {% endfor %}
+    {% endblock %}
+
+    <th class="header points">
+        {% if sort_links %}<a href="{{ sort_links.performance_points }}">{% endif %}
+        {{ _('Points') }}
+        {%- if sort_links %}{{ sort_order.performance_points }}</a>{% endif %}
+    </th>
+    {% block after_point_head %}{% endblock %}
+</tr>
+</thead>

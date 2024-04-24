@@ -1,0 +1,3 @@
+<span class="{{ user.css_class }}"><a href="{{ url('user_page', user.username) }}">
+    {% if user.name and not noname %}{{ user.name }} {% else %}{{ user.username }}{% endif %}</a></span>
+    

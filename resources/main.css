@@ -1,0 +1,362 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --newbie: theme('colors.gray.500');
+  --amateur: theme('colors.green.500');
+  --expert: theme('colors.blue.500');
+  --candidate-master: theme('colors.purple.500');
+  --master: theme('colors.orange.500');
+  --grandmaster: theme('colors.red.500');
+  --target: theme('colors.red.500');
+  --success: color('#52fa7c');
+}
+
+.title_row a {
+  @apply text-indigo-500 hover:text-indigo-700
+}
+
+.bg-gray-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+}
+.bg-orange-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 115 22 / var(--tw-bg-opacity));
+}
+.bg-red-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 68 68 / var(--tw-bg-opacity));
+}
+.bg-green-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(34 197 94 / var(--tw-bg-opacity));
+}
+.text-green-700 {
+  --tw-text-opacity: 1;
+  color: rgb(21 128 61 / var(--tw-text-opacity));
+}
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity));
+}
+
+.py-1 {
+  padding-top: 0.25rem/* 4px */;
+  padding-bottom: 0.25rem/* 4px */;
+}
+
+.atcoder_format {
+  @apply border-l min-w-[5rem] w-24 py-1 text-center bg-white 
+}
+
+.default_format {
+  @apply border-l min-w-[5rem] w-24 py-1 text-center bg-white
+}
+
+.ecoo_format {
+  @apply border-l min-w-[5rem] w-24 py-1 text-center bg-white
+}
+
+.icpc_format {
+  @apply border-l min-w-[5rem] w-24 py-1 text-center bg-white
+}
+
+.ioi_format {
+  @apply border-l min-w-[5rem] w-24 py-1 text-center bg-white
+}
+
+.prose .table {
+  @apply table-fixed
+}
+
+.prose .table thead th:nth-child(1) {
+  @apply !rounded-tl-none
+}
+
+.prose .table thead th:nth-last-child(1) {
+  @apply !rounded-tr-none
+}
+
+.prose img.emojione {
+  @apply inline-flex h-5 align-text-top my-0
+}
+
+.tabs {
+  @apply border-b flex w-full mb-2
+}
+
+.tabs > ul {
+  @apply m-0 p-0 flex overflow-x-auto overflow-y-hidden list-outside
+}
+
+.tabs > ul > li {
+  @apply -mb-px relative block
+}
+.tabs > ul > li > a {
+  @apply mr-0.5 leading-5 rounded-t-md relative block px-4 py-3 whitespace-nowrap text-gray-700
+}
+.tabs > ul > li.active > a {
+  @apply text-black cursor-default bg-white border border-red-50 border-b-transparent border-t-[3px] border-t-blue-500
+}
+
+.solved-problem-color {
+  @apply text-green-500
+}
+
+.unsolved-problem-color {
+  @apply text-red-500
+}
+
+.attempted-problem-color {
+  @apply text-yellow-400
+}
+
+.top-pagination-bar {
+  @apply mb-3
+}
+
+.bottom-pagination-bar {
+  @apply mt-3
+}
+
+#content-body {
+  @apply pb-16
+}
+
+/* Rating */
+
+.rating {
+  @apply font-bold
+}
+
+.rate-newbie {
+  color: var(--newbie)
+}
+
+.rate-amateur {
+  color: var(--amateur)
+}
+
+.rate-expert {
+  color: var(--expert)
+}
+
+.rate-candidate-master {
+  color: var(--candidate-master)
+}
+
+.rate-master {
+  color: var(--master)
+}
+
+.rate-grandmaster {
+  color: var(--grandmaster)
+}
+
+.rate-target {
+  color: var(--target)
+}
+
+.rate-box {
+  @apply w-5 
+}
+
+.rate-box.rate-none {
+  @apply invisible
+}
+
+.rate-box circle {
+  fill: none;
+  @apply stroke-2
+}
+
+.rate-box.rate-newbie circle {
+  stroke: var(--newbie);
+}
+.rate-box.rate-amateur circle {
+  stroke: var(--amateur);
+}
+.rate-box.rate-expert circle {
+  stroke: var(--expert);
+}
+.rate-box.rate-candidate-master circle {
+  stroke: var(--candidate-master);
+}
+.rate-box.rate-master circle {
+  stroke: var(--master);
+}
+.rate-box.rate-grandmaster circle {
+  stroke: var(--grandmaster);
+}
+.rate-box.rate-target circle {
+  stroke: var(--target);
+}
+.rate-box.rate-newbie path {
+  fill: var(--newbie);
+}
+.rate-box.rate-amateur path {
+  fill: var(--amateur);
+}
+.rate-box.rate-expert path {
+  fill: var(--expert);
+}
+.rate-box.rate-candidate-master path {
+  fill: var(--candidate-master);
+}
+.rate-box.rate-master path {
+  fill: var(--master);
+}
+.rate-box.rate-grandmaster path {
+  fill: var(--grandmaster);
+}
+.rate-box.rate-target path {
+  fill: var(--target);
+}
+
+.sidebox {
+  @apply px-1.5 pb-6 !important
+}
+
+.btn-clipboard {
+  @apply absolute top-0 right-0
+}
+
+.scrollbar::-webkit-scrollbar { 
+  @apply w-2.5 h-2.5
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  @apply rounded-full bg-gray-500
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  @apply rounded-full m-px bg-gray-700
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-indigo-500
+}
+
+.correct {
+  @apply text-green-500
+}
+
+.incorrect {
+  @apply underline text-red-500
+}
+
+input.incorrect {
+  @apply bg-red-500 text-white
+}
+
+/* Result */
+
+.AC {
+  @apply text-green-500 bg-[#53f23f]
+}
+
+.case-AC {
+  @apply text-green-500
+}
+
+.TLE, .MLE, .OLE{
+  @apply text-black bg-[#ccc]
+}
+
+.case-OLE, .case-TLE, .case-MLE, .case-IR {
+  @apply text-black
+}
+
+.WA {
+  @apply text-red-500 bg-[#ccc]
+}
+
+.case-WA {
+  @apply text-red-500
+}
+
+.case-RTE {
+  @apply text-orange-500
+}
+
+.RTE {
+  @apply text-orange-500 bg-[#ccc]
+}
+
+/* Progress */
+.activity-label {
+  @apply rounded-md relative whitespace-nowrap
+}
+.activity-0 {
+  @apply bg-[#ddd]
+}
+
+.activity-1 {
+  @apply bg-[#9be9a8]
+}
+
+.activity-2 {
+  @apply bg-[#40c463]
+}
+
+.activity-3 {
+  @apply bg-[#2f9c4c]
+}
+
+.activity-4 {
+  @apply bg-[#216e39]
+}
+
+/* Markdown */
+
+.prose details {
+  @apply block px-2 my-5 rounded-md bg-gray-50 border transition-all ease-in-out
+}
+
+.prose details summary:focus {
+  @apply outline-none
+}
+
+.prose details summary::-webkit-details-marker {
+  @apply hidden
+}
+
+/* Attach the "no-details" class to details tags
+   in browsers that do not support them to get
+   open/show functionality. */
+.prose details.no-details:not([open]) > * {
+  @apply hidden
+}
+
+.prose details.no-details:not([open]) summary {
+  @apply block
+}
+
+.prose summary {
+  @apply border-none font-bold -mx-2 px-4 py-2 relative block min-h-[1rem] cursor-pointer rounded-t-md text-xl
+}
+
+.prose details.success>summary {
+  border-color: #52fa7c;
+  color: #52fa7c;
+  @apply bg-[#111217] 
+}
+
+.prose details>summary::after {
+  content: '\f054';
+  @apply right-4 font-awesome absolute
+}
+
+.prose details[open]>summary::after {
+  @apply rotate-90
+}
+
+.prose details[open]>summary {
+  @apply bg-black text-white
+}
+
+.highlight code {
+  @apply font-roboto text-base
+}

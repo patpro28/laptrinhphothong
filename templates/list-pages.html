@@ -1,0 +1,42 @@
+<div class="inline-flex items-stretch border max-w-fit [&>*]:p-1 lg:[&>*]:p-2 [&>*]:font-semibold [&>*]:-my-px [&>*]:min-w-[2rem] lg:[&>*]:min-w-[2.75rem] rounded-md divide-x divide-slate-400 border-black">
+    {% if page_obj.has_previous() %}
+        {% if page_obj.previous_page_number() == 1 and first_page_href != None %}
+            <a class="flex flex-col items-center justify-center h-full" href="{{ first_page_href }}">
+                <i class="fa-solid fa-circle-chevron-left"></i>
+            </a>
+        {% else %}
+            <a class="flex flex-col items-center justify-center" href="{{ page_prefix or '' }}{{ page_obj.previous_page_number() }}{{ page_suffix or '' }}">
+                <i class="fa-solid fa-circle-chevron-left"></i>
+            </a>
+        {% endif %}
+        
+    {% else %}
+        <a class="flex flex-col items-center justify-center" disabled>
+            <i class="fa-solid fa-circle-chevron-left"></i>                                                                                                            </i>
+        </a>
+    {% endif %}
+
+    {% for page in page_obj.page_range %}
+        {% if not page %}
+            <div class="flex flex-col items-center justify-center">
+                <i class="fa-solid fa-ellipsis"></i>
+            </div>
+        {% else %}
+            <a class="{% if page == page_obj.number %} bg-blue-500 {% endif %} flex flex-col items-center justify-center" href="
+                {%- if page == 1 and first_page_href != None -%}
+                    {{ first_page_href }}
+                {%- else -%}
+                    {{ page_prefix or '' }}{{ page }}{{ page_suffix or '' }}
+                {%- endif -%}
+            ">{{ page }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next() %}
+        <a class="flex flex-col items-center justify-center" href="{{ page_prefix or '' }}{{ page_obj.next_page_number() }}{{ page_suffix or '' }}">
+            <i class="fa-solid fa-circle-chevron-right"></i>    
+        </a>
+    {% else %}
+        <a class="flex flex-col items-center justify-center " disabled><i class="fa-solid fa-circle-chevron-right"></i></a>
+    {% endif %}
+</div>

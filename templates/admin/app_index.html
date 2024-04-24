@@ -1,0 +1,39 @@
+{% extends "admin/index.html" %}
+{% load i18n grp_tags %}
+
+{% block javascripts %}
+    {{ block.super }}
+{% endblock %}
+
+{% if not is_popup %}
+    {% block breadcrumbs %}
+        <ul class="grp-horizontal-list">
+            <li><a class="hover:text-indigo-500" href="{% url 'admin:index' %}">{% trans "Home" %}</a></li>
+            {% for app in app_list %}
+                {% blocktrans with app.name as name %}<li>{{ name }}</li>{% endblocktrans %}
+            {% endfor %}
+        </ul>
+    {% endblock %}
+{% endif %}
+
+{% block content %}
+<div class="p-4" id="apps_init">
+    {% for app in app_list %}
+        <div class="flex flex-col divide-y grp-module" id="app_{{ app.name|lower }}">
+            <div class='p-2 text-3xl font-bold bg-blue-200'>{% trans app.name %}</div>
+            {% for model in app.models %}
+                <div class="flex items-center !p-2 text-lg grp-row">
+                    {% if model.admin_url %}<a class="flex-1 font-bold hover:text-indigo-500" href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}<span class="flex-1 font-bold">{{ model.name }}</span>{% endif %}
+                    {% if model.perms.add %}
+                        <ul class="grp-actions">
+                            {% if model.perms.add %}<li class="grp-icon grp-add-link"><a class="group hover:text-indigo-500" href="{{ model.add_url }}" title="{% trans 'Add' %}"><i class="fa-solid fa-circle-plus group-hover:scale-125"></i></a></li>{% endif %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% empty %}
+        <p>{% trans "You don´t have permission to edit anything." %}</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+<div class="col-span-2 py-2">
+  {{ link_user(user) }}
+</div>
+<div class="p-2 col-span-9 {% if is_self %} bg-yellow-100 {% endif %}">
+  <div class="relative h-8 border-b-2 border-dashed">
+    <div class="absolute left-0 transition-all duration-500" id="car_{{ user.id }}">
+      <i class="fa-solid fa-car-side fa-lg"></i>
+    </div>
+    <div class="absolute right-0 text-green-500">
+      <i class="fa-solid fa-lg fa-flag-checkered"></i>
+    </div>
+  </div>
+</div>
+<div class="col-span-1 py-2 font-semibold text-right" id="order_{{ user.id }}">
+  ???
+</div>

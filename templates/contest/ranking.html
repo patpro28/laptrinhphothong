@@ -1,0 +1,314 @@
+{% extends "user/base-users.html" %}
+
+{% block title_ruler %}{% endblock %}
+
+{% block action_row %}
+    {% set title = contest.name %}
+    {% include "contest/contest-tabs.html" %}
+{% endblock %}
+
+{% block users_media %}
+    <style>
+        #users-table, .scrollbar {
+            transform:rotateX(180deg);
+            -ms-transform:rotateX(180deg); /* IE 9 */
+            -webkit-transform:rotateX(180deg); /* Safari and Chrome */
+        }
+
+        #users-table .username {
+            min-width: 20em;
+        }
+
+        #users-table .rating-column {
+            min-width: 3em;
+        }
+
+        #users-table td {
+            height: 2.5em;
+        }
+
+        #users-table a {
+            display: block;
+        }
+
+        .userinfo a, .user-name a, .user-name form {
+            display: inline !important;
+        }
+
+        #users-table th a, #users-table th a:link, #users-table th a:visited {
+            color: white;
+        }
+
+        #users-table th a:hover {
+            color: #0F0;
+        }
+
+        #users-table td a:hover {
+            text-decoration: underline;
+        }
+
+        .rank {
+            min-width: 2.5em
+        }
+
+        .points {
+            min-width: 4em;
+        }
+
+        .disqualified {
+            background-color: #ffa8a8 !important;
+        }
+
+        .full-score, .full-score a {
+            font-weight: bold;
+            color: green;
+        }
+
+        .partial-score, .partial-score a {
+            color: green;
+        }
+
+        .failed-score, .failed-score a {
+            font-weight: bold;
+            color: red;
+        }
+
+        .pretest-full-score, .pretest-full-score a {
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        .pretest-partial-score, .pretest-partial-score a {
+            color: #2980b9;
+        }
+
+        .pretest-failed-score, .pretest-failed-score a {
+            font-weight: bold;
+            color: red;
+        }
+
+        .first-accept {
+            background: #89FA93;
+        }
+
+        .user-points, .user-points a {
+            font-weight: bold;
+            color: black;
+        }
+
+        .solving-time {
+            color: gray;
+            font-weight: normal;
+            font-size: 0.75em;
+            padding-bottom: -0.75em;
+        }
+
+        .point-denominator {
+            border-top: 1px solid gray;
+            font-size: 0.7em;
+        }
+
+        .start-time {
+            display: none;
+        }
+
+        .user-name {
+            position: relative;
+        }
+
+        .organization-column {
+            display: none;
+        }
+
+        .organization-column a {
+            color: gray !important;
+            font-weight: 600;
+        }
+        .username-column {
+            display: none;
+        }
+    </style>
+
+    {% if has_rating %}
+        <style>#users-table .rate-box {
+            font-size: 0.85em;
+            float: left;
+        }
+
+        #users-table td:nth-child(1) .rating {
+            margin-left: 1.25em;
+            display: block;
+        }
+
+        #users-table td:nth-child(2) a {
+            display: block;
+        }
+        </style>
+    {% endif %}
+
+    <style>
+        .select2-selection__arrow {
+            display: none;
+        }
+
+        .select2-selection__rendered {
+            cursor: text;
+            overflow: initial !important
+        }
+
+        .select2-results__option--highlighted {
+            background-color: #DEDEDE !important;
+        }
+
+        .select2-results__option {
+            white-space: nowrap;
+        }
+
+        #search-contest, #search-contest + .select2 {
+            margin-top: 0.5em;
+        }
+
+        #search-contest {
+            width: 200px;
+            height: 2.3em;
+        }
+    </style>
+{% endblock %}
+
+{% block users_js_media %}
+    {% if can_edit %}
+        <script type="text/javascript">
+            $(function () {
+                $('a.disqualify-participation').click(function (e) {
+                    e.preventDefault();
+                    if (e.ctrlKey || e.metaKey || confirm("{{ _('Are you sure you want to disqualify this participation?') }}"))
+                        $(this).closest('form').submit();
+                })
+                $('a.un-disqualify-participation').click(function (e) {
+                    e.preventDefault();
+                    if (e.ctrlKey || e.metaKey || confirm("{{ _('Are you sure you want to un-disqualify this participation?') }}"))
+                        $(this).closest('form').submit();
+                })
+            });
+        </script>
+    {% endif %}
+    {% if not contest.ended %}
+        <script type="text/javascript">
+            $(function () {
+                window.install_tooltips = function () {
+                    $('.user-name').find('> span:first-child').each(function () {
+                        var link = $(this);
+                        link.mouseenter(function (e) {
+                            var start_time = link.siblings('.start-time').text().trim();
+                            link.addClass('tooltipped tooltipped-e').attr('aria-label', start_time);
+                        }).mouseleave(function (e) {
+                            link.removeClass('tooltipped tooltipped-e').removeAttr('aria-label');
+                        });
+                    });
+                };
+
+                install_tooltips();
+            });
+        </script>
+    {% endif %}
+    <script type="text/javascript">
+        $(function () {
+            var url = '{{ url('contest_participation', contest.key, '__username__') }}';
+            var placeholder = $('#search-contest').replaceWith($('<select>').attr({
+                id: 'search-contest'
+            })).attr('placeholder');
+
+            $('#search-contest').select2({
+                placeholder: placeholder,
+                ajax: {
+                    url: '{{ url('contest_user_search_select2_ajax', contest.key) }}'
+                },
+                minimumInputLength: 1,
+                templateResult: function (data) {
+                    return $('<span>', { class: 'flex space-x-4' })
+                        .append($('<img>', {
+                            class: 'user-search-image',
+                            src: data.gravatar_url,
+                            width: 24,
+                            height: 24,
+                        }))
+                        .append($('<span>', {
+                            class: data.display_rank + ' user-search-name',
+                        }).text(data.text));
+                }
+            }).on('change', function () {
+                window.location.href = url.replace('__username__', $(this).val());
+            });
+
+            $('#show-organizations-checkbox').click(function () {
+                $('.organization-column').toggle();
+                localStorage.setItem('show-organizations', $('.organization-column').is(':visible') ? 'true' : 'false');
+            });
+
+            $('#show-usernames-checkbox').click(function () {
+                $('.username-column').toggle();
+                localStorage.setItem('show-usernames', $('.username-column').is(':visible') ? 'true' : 'false');
+            });
+            
+            var table = document.querySelector('#users-table')
+            $('#compact-checkbox').click(function () {
+                table.classList.toggle('border-spacing-y-1')
+                table.classList.toggle('border-spacing-y-4')
+                localStorage.setItem('compact-row', table.classList.contains('border-spacing-y-1') ? 'true' : 'false');
+            });
+            
+            if (localStorage.getItem('show-organizations') == 'true') {
+                $('.organization-column').show();
+                $('#show-organizations-checkbox').prop('checked', true);
+            }
+
+            if (localStorage.getItem('show-usernames') == 'true') {
+                $('.username-column').show();
+                $('#show-usernames-checkbox').prop('checked', true);
+            }
+            
+            if (localStorage.getItem('compact-row') == 'true') {
+                table.classList.toggle('border-spacing-y-1')
+                table.classList.toggle('border-spacing-y-4')
+                $('#compact-checkbox').prop('checked', true);
+            }
+        });
+    </script>
+    {% include "contest/media-js.html" %}
+{% endblock %}
+
+{% block before_users_table %}
+
+<div class="flex flex-row-reverse items-center">
+{% if request.user.is_superuser %}
+<div class="flex flex-col items-center justify-start">
+    <a class="p-3 font-semibold text-white bg-indigo-500 rounded-md hover:bg-indigo-600" href="{{ url('export_csv', contest.key) }}">Export to CSV</a>
+</div>
+{% endif %}
+    {% if tab == 'participation' %}
+        {% if contest.can_see_full_scoreboard(request.user) %}
+            <input id="search-contest" type="text" placeholder="{{ _('View user participation') }}">
+        {% endif %}
+    {% endif %}
+    <div class="flex flex-1 space-x-4 item-center">
+        <label for="show-organizations-checkbox" class="inline-flex items-center">
+            <input id="show-organizations-checkbox" type="checkbox" class="w-5 h-5 text-indigo-600 border-gray-300 rounded shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50">
+            <span class="ml-2 text-gray-700">{{ _('Show organizations') }}</span>
+        </label>
+        <label for="show-usernames-checkbox" class="inline-flex items-center">
+            <input id="show-usernames-checkbox" type="checkbox" class="w-5 h-5 text-indigo-600 border-gray-300 rounded shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50">
+            <span class="ml-2 text-gray-700">{{ _('Show username') }}</span>
+        </label>
+        {% if request.user.is_staff or request.user.is_superuser %}
+        <label for="compact-checkbox" class="inline-flex items-center">
+            <input id="compact-checkbox" type="checkbox" class="w-5 h-5 text-indigo-600 border-gray-300 rounded shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50">
+            <span class="ml-2 text-gray-700">{{ _('Compact') }}</span>
+        </label>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block users_table %}
+    {% include "contest/ranking-table.html" %}
+{% endblock %}

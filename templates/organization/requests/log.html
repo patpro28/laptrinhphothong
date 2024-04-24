@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block body %}
+    {% include "organization/requests/tabs.html" %}
+
+    {% if requests %}
+        <table class="table w-full border table-fixed">
+            <thead class="text-white bg-black">
+                <tr class="divide-x [&>*]:p-2">
+                    <th>{{ _('User') }}</th>
+                    <th>{{ _('Admin') }}</th>
+                    <th>{{ _('Time') }}</th>
+                    <th>{{ _('State') }}</th>
+                    <th class="w-1/2">{{ _('Reason') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for r in requests %}
+                    <tr id="request-{{ r.id }}" class="divide-x [&>*]:p-2">
+                        <td class="text-center">{{ link_user(r.user) }}</td>
+                        <td class="text-center">{% if r.admin %}{{ link_user(r.admin) }}{% endif %}</td>
+                        <td class="text-center">
+                            <a href="{{ url('request_organization_detail', object.id, object.slug, r.id) }}">
+                                {{- r.time|date(_("N j, Y, H:i")) -}}
+                            </a>
+                        </td>
+                        <td class="text-center">{{ r.state }}</td>
+                        <td>{{ r.reason|truncatechars(100) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ _('There are no requests to approve.') }}</p>
+    {% endif %}
+{% endblock %}

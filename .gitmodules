@@ -1,0 +1,14 @@
+[submodule "resources/pagedown"]
+	path = resources/pagedown
+	url = https://github.com/DMOJ/dmoj-pagedown.git
+	branch = master
+[submodule "resources/libs"]
+	path = resources/libs
+	url = https://github.com/patpro28/site-assets
+	branch = master
+[submodule "resources/semantic"]
+	path = resources/semantic
+	url = https://github.com/fomantic/Fomantic-UI-CSS
+[submodule "resources/fontawesome"]
+	path = resources/fontawesome
+	url = https://github.com/patpro28/fontawesome

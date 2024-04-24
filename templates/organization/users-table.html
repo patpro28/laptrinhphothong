@@ -1,0 +1,21 @@
+{% extends "user/users-table.html" %}
+
+{% block before_point_head %}
+    {% if is_admin %}
+        <th class="header"></th>
+    {% endif %}
+{% endblock %}
+
+{% block before_point %}
+    {% if is_admin %}
+        <td>
+            {% if user.id != request.user.id %}
+            <form action="{{ kick_url }}" method="POST" class="ui form kick-form">
+                {% csrf_token %}
+                <input type="hidden" name="user" value="{{ user.id }}">
+                <a href="javascript:void(0)" class="p-2 text-white bg-red-500 rounded-md button">{{ _('Kick') }}</a>
+            </form>
+            {% endif %}
+        </td>
+    {% endif %}
+{% endblock %}

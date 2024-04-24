@@ -1,0 +1,18 @@
+<div class="text-2xl font-bold text-red-600">
+    {% if request.user == submission.user.user %}
+        {% trans trimmed %}
+            An internal error occurred while grading, and the {{ SITE_NAME }} administrators have been notified.<br>
+            In the meantime, try resubmitting in a few seconds.
+        {% endtrans %}
+    {% else %}
+        {{ _('An internal error occurred while grading.') }}
+    {% endif %}
+</div>
+
+{% if submission.error and request.user.is_authenticated %}
+    {% if request.user.id in submission.problem.editor_ids or perms.judge.edit_all_problem %}
+        <hr style="float:left;width:30%"><br>
+        <div class="text-xl font-bold">{{ _('Error information') }}</div>
+        <pre><code>{{ submission.error|highlight('pytb') }}</code></pre>
+    {% endif %}
+{% endif %}

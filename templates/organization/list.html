@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block js_media %}
+    <script src="{{ static('libs/tablesorter.js') }}" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#organization-table").tablesorter();
+        });
+    </script>
+{% endblock %}
+
+{% block title_ruler %}{% endblock %}
+
+{% block action_row %}
+    {% set tab = 'organizations' %}
+    {% set title = _('Organizations') %}
+    {% include "user/user-list-tabs.html" %}
+{% endblock %}
+
+{% block body %}
+<div class="flex flex-col space-y-4">
+  {% if my_org %}
+  <div class="text-2xl font-bold">
+    {{ _('My organizations') }}
+  </div>
+  <table class="border">
+    <thead>
+      <tr class="[&>*]:p-4 divide-x divide-white">
+        <th class="w-5/6 text-white bg-black" id="name">{{ _('Name') }}</th>
+        <th class="text-white bg-black">{{ _('Members') }}</th>
+      </tr>
+    </thead>
+    <tbody class="[&>tr>*]:text-center [&>tr>*]:p-2 divide-x divide-y divide-slate-300">
+      {% for org in my_org %}
+      <tr class="divide-x divide-slate-300">
+        <td><a class="font-semibold cursor-pointer" href="{{ org.get_absolute_url() }}">{{ org.name }}</a></td>
+        <td class="">
+          <a class="font-semibold cursor-pointer" href="{{ org.get_users_url() }}">{{ org.member_count }}</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  <div class="text-2xl font-bold">
+    {{ _('All organizations') }}
+  </div>
+  <table id="organization-table" class="border">
+    <thead>
+      <tr class="[&>*]:p-4 divide-x divide-white">
+        <th class="w-5/6 text-white bg-black" id="name">{{ _('Name') }}</th>
+        <th class="text-white bg-black">{{ _('Members') }}</th>
+      </tr>
+    </thead>
+    <tbody class="[&>tr>*]:text-center [&>tr>*]:p-2 divide-x divide-y divide-slate-300">
+      {% for org in organizations %}
+      <tr class="divide-x divide-slate-300">
+        <td><a class="font-semibold cursor-pointer" href="{{ org.get_absolute_url() }}">{{ org.name }}</a></td>
+        <td class="">
+          <a class="font-semibold cursor-pointer" href="{{ org.get_users_url() }}">{{ org.member_count }}</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

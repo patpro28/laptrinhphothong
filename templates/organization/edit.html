@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block js_media %}
+    {{ form.media.js }}
+    <script type="text/javascript">
+        window.django = {jQuery: $};
+
+        function pluralidx(count) {
+            return (count == 1) ? 0 : 1;
+        }
+
+        function gettext(msgid) {
+            return msgid;
+        }
+
+        function interpolate(fmt, obj, named) {
+            if (named) {
+                return fmt.replace(/%\(\w+\)s/g, function (match) {
+                    return String(obj[match.slice(2, -2)])
+                });
+            } else {
+                return fmt.replace(/%s/g, function (match) {
+                    return String(obj.shift())
+                });
+            }
+        }
+    </script>
+{% endblock %}
+
+{% block media %}
+    {{ form.media.css }}
+    <link rel="stylesheet" href="{{ static('admin/css/widgets.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ static('problem_edit.css') }}" type="text/css">
+{% endblock %}
+
+{% block body %}
+    <div class="ui segment">
+        <form action="" method="post" class="ui form">
+            {% csrf_token %}
+            <div class="field">
+                {{ form.about.label_tag() }}
+                {{ form.about }}
+            </div>
+            <div class="field">
+                {{ form.logo_override_image.label_tag() }}
+                {{ form.logo_override_image }}
+                <div class="help">
+                    {{ form.logo_override_image.help_text }}
+                </div>
+            </div>
+            <div class="field">
+                {{ form.admins.label_tag() }}
+                {{ form.admins }}
+                <div class="help">
+                    {{ form.admins.help_text }}
+                </div>
+            </div>
+            <button class="ui primary button" type="submit">{{ _('Update') }}</button>
+        </form>
+    </div>
+{% endblock %}

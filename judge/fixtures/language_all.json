@@ -1,0 +1,84 @@
+[
+{
+    "model": "judge.language",
+    "pk": 1,
+    "fields": {
+        "key": "PY2",
+        "name": "Python 2",
+        "short_name": "",
+        "common_name": "Python",
+        "ace": "python",
+        "pygments": "python",
+        "template": "",
+        "info": "",
+        "description": "",
+        "extension": "py"
+    }
+},
+{
+    "model": "judge.language",
+    "pk": 2,
+    "fields": {
+        "key": "PY3",
+        "name": "Python 3",
+        "short_name": "",
+        "common_name": "Python",
+        "ace": "python",
+        "pygments": "python3",
+        "template": "",
+        "info": "",
+        "description": "",
+        "extension": "py"
+    }
+},
+{
+    "model": "judge.language",
+    "pk": 3,
+    "fields": {
+        "key": "PYPY",
+        "name": "PyPy 2",
+        "short_name": "PYPY2",
+        "common_name": "Python",
+        "ace": "python",
+        "pygments": "python",
+        "template": "",
+        "info": "",
+        "description": "",
+        "extension": "py"
+    }
+},
+{
+    "model": "judge.language",
+    "pk": 4,
+    "fields": {
+        "key": "PYPY3",
+        "name": "PyPy 3",
+        "short_name": "PYPY3",
+        "common_name": "Python",
+        "ace": "python",
+        "pygments": "python3",
+        "template": "",
+        "info": "",
+        "description": "",
+        "extension": "py"
+    }
+},
+{
+    "model": "judge.language",
+    "pk": 5,
+    "fields": {
+        "key": "SCRATCH",
+        "name": "Scratch",
+        "short_name": "SCRATCH",
+        "common_name": "Scratch",
+        "ace": "python",
+        "pygments": "python3",
+        "template": "",
+        "info": "",
+        "description": "",
+        "extension": "py",
+        "file_only": true,
+        "file_size_limit": 1
+    }
+}
+]

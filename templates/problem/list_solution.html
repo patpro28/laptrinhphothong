@@ -1,0 +1,44 @@
+{% extends 'common-content.html' %}
+
+{% block body %}
+<div class="max-w-5xl mx-auto">
+  {% if page_obj.has_other_pages() %}
+    <div class="top-pagination-bar">{% include "list-pages.html" %}</div>
+  {% endif %}
+  <table class="w-full mt-4 border">
+    <thead class="text-white bg-black">
+      <tr class="divide-x">
+        <th class="w-10 p-2 text-center">
+          <i class="fa-solid fa-circle-check"></i>
+        </th>
+        <th class="w-10 p-2 text-center">
+          Voted
+        </th>
+        <th class="p-2 text-center">Author</th>
+        <th class="w-64 p-2">Date created</th>
+        <th class="w-32"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for sol in solutions %}
+      <tr class="divide-x">
+        <td class="text-center">
+          {% if sol.approved %}
+          <i class="text-green-500 fa-solid fa-circle-check"></i>
+          {% else %}  
+          <i class="text-red-500 fa-solid fa-circle-xmark"></i>
+          {% endif %}
+        </td>
+        <td class="p-2 font-bold text-center">{{ sol.score }}</td>
+        <td class="p-2">{{ link_user(sol.author) }}</td>
+        <td class="p-2 text-center">{{ sol.created|date(_("M j, Y, G:i")) }}</td>
+        <td class="text-center text-blue-500"><a href="{{ url('public_solution_detail', sol.problem.code, sol.pk) }}">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if page_obj.has_other_pages() %}
+    <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
+  {% endif %}
+</div>
+{% endblock body %}

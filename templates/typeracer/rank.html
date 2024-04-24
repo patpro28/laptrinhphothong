@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block bodyend %}
+<script>
+  var time_end = new Date('{{ contest.time_end }}')
+  var now = new Date()
+  if (now < time_end) {
+    setTimeout(function() {
+      window.location.reload();
+    }, 5000);
+  }
+</script>
+{% endblock bodyend %}
+
+{% block body %}
+
+<table class="w-3/4 mx-auto mt-10 border table-fixed">
+  <thead>
+    <tr class="[&>*]:text-center divide-x [&>*]:bg-black [&>*]:text-white [&>*]:p-2">
+      <th class="w-20">Rank</th>
+      <th>Username</th>
+      <th>Speed</th>
+      <th>Progress</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y">
+    {% for user in ranks %}
+    <tr class="divide-x [&>*]:p-2">
+      <td class="text-center">
+        {{ loop.index }}
+      </td>
+      <td>
+        {{ link_user(user.user) }}
+      </td>
+      <td class="font-semibold text-center">
+        {{ user.speed|floatformat(0) }} cpm
+      </td>
+      <td class="font-semibold text-center">
+        {{ user.progress }}%
+      </td>
+      <td class="font-semibold text-center">
+        {{ user.time|floatformat(3) }}s
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock body %}

@@ -1,0 +1,79 @@
+import logging
+
+from bleach.sanitizer import Cleaner
+from django.conf import settings
+from markupsafe import Markup
+from lxml import html
+from lxml.etree import ParserError, XMLSyntaxError
+import markdown as md
+
+from .lazy_load import lazy_load as lazy_load_processor
+from judge.utils.camo import client as camo_client
+from .bleach_whitelist import all_styles, mathml_attrs, mathml_tags
+from .. import registry
+
+logger = logging.getLogger('judge.html')
+
+NOFOLLOW_WHITELIST = settings.NOFOLLOW_EXCLUDED
+
+
+cleaner_cache = {}
+
+
+def get_cleaner(name, params):
+    if name in cleaner_cache:
+        return cleaner_cache[name]
+
+    if params.get('styles') is True:
+        params['styles'] = all_styles
+
+    if params.pop('mathml', False):
+        params['tags'] = params.get('tags', []) + mathml_tags
+        params['attributes'] = params.get('attributes', {}).copy()
+        params['attributes'].update(mathml_attrs)
+
+    cleaner = cleaner_cache[name] = Cleaner(**params)
+    return cleaner
+
+
+def fragments_to_tree(fragment):
+    tree = html.Element('div')
+    try:
+        parsed = html.fragments_fromstring(fragment, parser=html.HTMLParser(recover=True))
+    except (XMLSyntaxError, ParserError) as e:
+        if fragment and (not isinstance(e, ParserError) or e.args[0] != 'Document is empty'):
+            logger.exception('Failed to parse HTML string')
+        return tree
+
+    if parsed and isinstance(parsed[0], str):
+        tree.text = parsed[0]
+        parsed = parsed[1:]
+    tree.extend(parsed)
+    return tree
+
+
+def fragment_tree_to_str(tree):
+    return html.tostring(tree, encoding='unicode')[len('<div>'):-len('</div>')]
+
+
+@registry.filter
+def markdown(value, style, lazy_load=False):
+    styles = settings.MARKDOWN_STYLES.get(style, settings.MARKDOWN_DEFAULT_STYLE)
+    bleach_params = styles.get('bleach', {})
+
+    post_processors = []
+    if styles.get('use_camo', False) and camo_client is not None:
+        post_processors.append(camo_client.update_tree)
+    if lazy_load:
+        post_processors.append(lazy_load_processor)
+
+    result = md.markdown(value, extensions=settings.MARKDOWN_EXTENSIONS, extension_configs=settings.MARKDOWN_EXTENSIONS_CONFIG)
+
+    if post_processors:
+        tree = fragments_to_tree(result)
+        for processor in post_processors:
+            processor(tree)
+        result = fragment_tree_to_str(tree)
+    if bleach_params:
+        result = get_cleaner(style, bleach_params).clean(result)
+    return Markup(result)

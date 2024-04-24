@@ -1,0 +1,87 @@
+{% extends "tabs-base.html" %}
+
+{% block tabs %}
+<div class="flex items-baseline flex-1">
+    {{ make_tab('detail', 'fa-info-circle', url('contest_view', contest.key), _('Info')) }}
+    {% if contest.ended or can_edit %}
+        {{ make_tab('stats', 'fa-pie-chart', url('contest_stats', contest.key), _('Statistics')) }}
+    {% endif %}
+
+    {% if contest.start_time <= now or perms.judge.see_private_contest %}
+        {% if contest.can_see_own_scoreboard(request.user) %}
+            {{ make_tab('ranking', 'fa-ranking-star', url('contest_ranking', contest.key), _('Rankings')) }}
+            {% if request.user.is_authenticated %}
+                {{ make_tab('participation', 'fa-users', url('contest_participation_own', contest.key), _('Participation')) }}
+            {% endif %}
+        {% else %}
+            {{ make_tab('ranking', 'fa-ranking-star', None, _('Hidden Rankings')) }}
+        {% endif %}
+    {% endif %}
+    {% if can_edit %}
+        {% if perms.judge.moss_contest and has_moss_api_key %}
+            {{ make_tab('moss', 'fa-gavel', url('contest_moss', contest.key), _('MOSS')) }}
+        {% endif %}
+        {{ make_tab('edit', 'fa-edit', url('admin:judge_contest_change', contest.id), _('Edit')) }}
+        {{ make_tab('pdf', 'fa-file-pdf', url('contest_pdf', contest.key), _('PDF')) }}
+    {% endif %}
+    {% if perms.judge.clone_contest %}
+        {{ make_tab('clone', 'fa-copy', url('contest_clone', contest.key), _('Clone')) }}
+    {% endif %}
+</div>
+
+<div class="">
+{% if request.user.is_authenticated %}
+    {% if contest.can_join or is_editor or is_tester %}
+        {% set in_contest = contest.is_in_contest(request.user) %}
+        {% if contest.ended %}
+            {# Allow users to leave the virtual contest #}
+            {% if in_contest %}
+                <form action="{{ url('contest_leave', contest.key) }}" method="post"
+                        class="h-full">
+                    {% csrf_token %}
+                    <input type="submit" class="h-full p-4 text-white bg-blue-500 cursor-pointer rounded-t-md hover:bg-blue-700 leaving-forever" value="{{ _('Leave contest') }}">
+                </form>
+            {% else %}
+                {# Allow users to virtual join #}
+                <form action="{{ url('contest_join', contest.key) }}" method="post"
+                        class="h-full">
+                    {% csrf_token %}
+                    <input type="submit" class="h-full p-4 text-white bg-blue-500 cursor-pointer rounded-t-md hover:bg-blue-700" value="{{ _('Virtual join') }}">
+                </form>
+            {% endif %}
+        {% else %}
+            {# Allow users to leave the contest #}
+            {% if in_contest %}
+                <form action="{{ url('contest_leave', contest.key) }}" method="post"
+                        class="h-full">
+                    {% csrf_token %}
+                    <input type="submit" class="h-full p-4 text-white bg-blue-500 cursor-pointer rounded-t-md hover:bg-blue-700" value="
+                        {%- if request.participation.spectate %}
+                            {{- _('Stop spectating') -}}
+                        {% else %}
+                            {{- _('Leave contest') -}}
+                        {% endif %}">
+                </form>
+            {% elif is_editor or is_tester or live_participation.ended %}
+                <form action="{{ url('contest_join', contest.key) }}" method="post"
+                        class="h-full">
+                    {% csrf_token %}
+                    <input type="submit" class="h-full p-4 text-white bg-blue-500 cursor-pointer rounded-t-md hover:bg-blue-700" value="{{ _('Spectate contest') }}">
+                </form>
+            {% else %}
+                <form action="{{ url('contest_join', contest.key) }}" method="post"
+                        class="h-full">
+                    {% csrf_token %}
+                    <input type="submit" class="p-4 h-full rounded-t-md  bg-blue-500 text-white hover:bg-blue-700 cursor-pointer {% if not has_joined %}first-join{% endif %}"
+                            value="{{ _('Join contest') }}">
+                </form>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% elif contest.can_join %}
+    <a href="{{ url('auth_login') }}?next={{ LOGIN_RETURN_PATH|urlencode }}"
+                        class="h-full p-4 text-white bg-blue-500 cursor-pointer rounded-t-md hover:bg-blue-700 whitespace-nowrap">
+                        {{ _('Log in to participate') }}</a>
+{% endif %}
+</div>
+{% endblock %}

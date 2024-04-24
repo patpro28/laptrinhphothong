@@ -1,0 +1,180 @@
+<div class="ui threaded comments !max-w-none">
+    <div class="flex items-center w-full py-2 text-3xl font-bold border-b border-slate-600">
+        <i class="comments icon"></i>
+        {{ _('Comments') }}
+    </div>
+    {% if has_comments %}
+        {% set logged_in = request.user.is_authenticated %}
+        {% set profile = request.user if logged_in else None %}
+        {% for node in mptt_tree(comment_list) recursive %}
+            <div id="comment-{{ node.id }}" data-revision="{{ node.revisions - 1 }}"
+                data-max-revision="{{ node.revisions - 1 }}"
+                data-revision-ajax="{{ url('comment_revision_ajax', node.id) }}" class="comment {% if node.score <= vote_hide_threshold %} bad-comment{% endif %}">
+                {% with author=node.author %}
+                <a href="{{ url('user_page', author.username) }}" class="avatar">
+                    <img src="{{ gravatar(author, 135) }}">
+                </a>
+                {% endwith %}
+                <div class="content">
+                    {{ link_user(node.author) }}
+                    <div class="metadata">
+                        <div class="date">
+                            {{ relative_time(node.time, abs=_('commented on {time}'), rel=_('commented {time}')) }}
+                        </div>
+                        <div class="rating">
+                            {% if logged_in %}
+                            <a href="javascript:comment_upvote({{ node.id }})" class="{% if node.vote_score == 1 %}text-green-50 {% else %} text-green-500 {% endif %}">
+                                <i class="upvote-link fa-solid fa-play -rotate-90 "></i>
+                            </a>
+                            {% else %}
+                            <a href="javascript:alert('{{ _('Please login to vote')|escapejs }}')" title="{{ _('Please login to vote') }}" class="text-green-500">
+                                <i class="upvote-link fa-solid fa-play -rotate-90"></i>
+                            </a>
+                            {% endif %}
+                            <span class="comment-score">{{ node.score }}</span>
+                            {% if logged_in %}
+                            <a href="javascript:comment_downvote({{ node.id }})" class="{% if node.vote_score == -1 %} text-red-50 {% else %} text-red-500 {% endif %}">
+                                <i class="downvote-link fa-solid fa-play rotate-90"></i>
+                            </a>
+                            {% else %}
+                            <a href="javascript:alert('{{ _('Please login to vote')|escapejs }}')" title="{{ _('Please login to vote') }}" class="text-red-500">
+                                <i class="downvote-link fa-solid fa-play rotate-90"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="comment-edits">
+                            {% if node.revisions > 1 %}
+                            <span class="comment-edits">
+                                <a href="javascript:show_revision({{ node.id }}, -1)" class="previous-revision">
+                                    <i class="fa-solid fa-left-long"></i>
+                                </a>
+                                <span class="comment-edit-text">
+                                    {% if node.revisions > 2 %}
+                                        {% trans edits=node.revisions - 1 %}edit {{ edits }}{% endtrans %}
+                                    {% else %}
+                                        {{ _('edited') }}
+                                    {% endif %}
+                                </span>
+                                <a href="javascript:show_revision({{ node.id }}, 1)" style="visibility: hidden" class="next-revision">
+                                    <i class="fa-solid fa-right-long"></i>
+                                </a>
+                            </span>
+                            {% else %}
+                                <span class="comment-edits"></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text">
+                        <div class="comment-body" {% if node.score <= vote_hide_threshold %} style="display:none"{% endif %}>
+                            {{ node.body|markdown('comment', True)|reference|str|safe }}
+                        </div>
+                        {% if node.score <= vote_hide_threshold %}
+                            <div class="bad-comment-body">
+                                <p>
+                                    {%- trans id=node.id -%}
+                                        This comment is hidden due to too much negative feedback.
+                                        Click <a href="javascript:comment_show_content({{ id }})">here</a> to view it.
+                                    {%- endtrans -%}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="actions">
+                        <a href="#comment-{{ node.id }}" title="{{ _('Link') }}" class="comment-link">
+                            <i class="fa-solid fa-link"></i>
+                        </a>
+                        {% if logged_in and not comment_lock %}
+                        {% set can_edit = node.author.id == profile.id and not profile.mute %}
+                        {% if can_edit %}
+                        <a data-featherlight="{{ url('comment_edit_ajax', node.id) }}"
+                            href="{{ url('comment_edit', node.id) }}"
+                            title="{{ _('Edit') }}" class="edit-link">
+                            <i class="fa-solid fa-pencil"></i>
+                        </a>
+                        {% else %}
+                        <a href="javascript:reply_comment({{ node.id }})"
+                            title="{{ _('Reply') }}">
+                            <i class="fa-solid fa-reply"></i>
+                        </a>
+                        {% endif %}
+                        {% if perms.judge.change_comment %}
+                            {% if can_edit %}
+                                <a href="javascript:reply_comment({{ node.id }})"
+                                    title="{{ _('Reply') }}"><i class="fa-solid fa-reply"></i></a>
+                            {% else %}
+                                <a data-featherlight="{{ url('comment_edit_ajax', node.id) }}"
+                                    href="{{ url('comment_edit', node.id) }}" title="{{ _('Edit') }}"
+                                    class="edit-link"><i class="fa-solid fa-pencil"></i></a>
+                            {% endif %}
+                            <a data-featherlight="{{ url('comment_votes_ajax', node.id) }}"
+                                href="javascript:void(0)"
+                                title="{{ _('Votes') }}" class="votes-link"><i class="fa-solid fa-chart-column"></i></a>
+                            <a href="javascript:void(0)" title="{{ _('Hide') }}" data-id="{{ node.id }}"
+                                class="hide-comment"><i class="fa-solid fa-trash"></i></a>
+                            <a href="{{ url('admin:judge_comment_change', node.id) }}"
+                                title="{{ _('Admin') }}"><i class="fa-solid fa-gear"></i></a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="header-comment ui top attached secondary black inverted menu" style="display:none" id="header-{{ node.id }}-reply">
+                        <h3 class="ui item header">{{ _('Replying to comment') }}</h3>
+                        <div class="right menu"></div>
+                    </div>
+                    <div id="comment-{{ node.id }}-reply" class="reply-comment bottom attached ui segment" hidden></div>
+                </div>
+                {% with children=node.get_children() %}
+                    {% if children %}
+                        <div id="comment-{{ node.id }}-children" class="comments">{{ loop(children) }}</div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        {% endfor %}
+    {% elif not comment_lock %}
+        <p class="mt-2 text-lg font-normal text-black">{{ _('There are no comments at the moment.') }}</p>
+    {% endif %}
+
+    {% if request.user.is_authenticated and comment_form and not comment_lock %}
+    <div class="flex flex-col p-2 mt-4 space-y-4 rounded-md shadow-md">
+        {% block comment_submit_title %}
+        <div class="flex p-4 -m-2 text-white bg-black rounded-t-md">
+            <div class="flex-1 text-2xl font-bold">{{ _('New comment') }}</div>
+            <div class="right menu"></div>
+        </div>
+        {% endblock %}
+        <div class="flex flex-col">
+            {% if is_new_user %}
+                <div style="margin-bottom: 0" class="alert alert-info">
+                    {{ _('You need to have solved at least one problem before your voice can be heard.') }}
+                </div>
+            {% else %}
+                <form class="ui form" action="" method="post" id="new-comment">
+                    {% csrf_token %}
+                    {% if comment_form.errors %}
+                        <div id="form-errors">
+                            {{ comment_form.non_field_errors() }}
+                            {{ comment_form.parent.errors }}
+                            {% if comment_form.body.errors %}{{ _('Invalid comment body.') }}{% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="field">
+                        {{ comment_form.parent }}
+                        {{ comment_form.body }}
+                    </div>
+                    <button id="submit" type="submit" class="flex items-center px-4 py-2 font-semibold text-white bg-blue-500 rounded-md">
+                        <i class="edit icon"></i>
+                        <div class="content">
+                            {{ _('Add comment') }}
+                        </div>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+        {% endif %}
+    
+        {% if comment_lock %}
+            <div class="alert alert-warning comment-lock">
+                {{ _('Comments are disabled on this page.') }}
+            </div>
+        {% endif %}
+    </div>
+</div>

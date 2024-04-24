@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block media %}
+    {% include "timezone/media-css.html" %}
+    {{ form.media.css }}
+{% endblock %}
+
+{% block js_media %}
+    {% include "timezone/media-js.html" %}
+    {{ form.media.js }}
+    <script type="text/javascript">
+        $(function () {
+            $('.pass-req-link').click(function () {
+                $('.pass-req').toggle('fast');
+                return false;
+            });
+        });
+    </script>
+    {% if form.captcha %}
+        {{ recaptcha_init(LANGUAGE_CODE) }}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <div id="center-float" class="max-w-2xl p-8 mx-auto my-10 border-2 rounded-lg">
+        <form id="edit-form" action="" method="post" class="form-area" >
+            {% csrf_token %}
+            <label for="{{ form.username.id_for_label }}" class="block">
+                <span class="font-bold text-gray-700">{{ _('Username') }}</span>
+                <input type="text" name="username" autofocus=true autocomplete="off" id="{{ form.username.id_for_label }}" placeholder="{{ _('Username') }}" required class="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                {% if form.username.errors %}
+                    <div class="block text-red-500">{{ form.username.errors }}</div>
+                {% endif %}
+            </label>
+            <label for="{{ form.password1.id_for_label }}" class="block">
+                <span class="font-bold text-gray-700">{{ _('Password') }} <small class="text-[0.6rem]">(<a href="#" class="pass-req-link">?</a>)</small></span>
+                <div style="display: none" class="pass-req alert alert-info">
+                    <ul>
+                        {% for validator in password_validators %}
+                            <li>{{ validator.get_help_text() }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <input type="password" name="password1" placeholder="Password" autocomplete="off" id="{{ form.password1.id_for_label }}" required class="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                {% if form.password1.errors %}
+                    <div class="form-field-error">{{ form.password1.errors }}</div>
+                {% endif %}
+            </label>
+            <label for="{{ form.password2.id_for_label }}" class="block">
+                <span class="font-bold text-gray-700">{{ _('Password') }} <small class="text-[0.6rem]">{{ _('(again, for confirmation)') }}</small></span>
+                <input type="password" name="password2" placeholder="Password" autocomplete="off" id="{{ form.password2.id_for_label }}" required class="block w-full p-2 mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                {% if form.password2.errors %}
+                    <div class="form-field-error">{{ form.password2.errors }}</div>
+                {% endif %}
+            </label>
+
+            <div class="font-bold block-header">{{ _('Default language') }}</div>
+            <span class="fullwidth">{{ form.language }}</span>
+
+            <button class="w-full p-2 mt-4 text-white bg-blue-500 rounded-md hover:bg-blue-600" type="submit">{{ _('Register!') }}</button>
+        </form>
+    </div>
+
+    <div class="map-wrap">
+        <div class="map-inset">
+            <div class="map-axis-x"></div>
+            <div class="map-axis-y"></div>
+        </div>
+    </div>
+{% endblock %}

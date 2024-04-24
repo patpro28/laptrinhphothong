@@ -1,0 +1,89 @@
+<div class="grid w-full grid-cols-1 gap-4">
+    <div class="flex items-center p-3 text-lg text-white bg-black rounded-t-md">
+        <div class="flex-1 font-bold">
+            {{ _('Problem search') }}
+        </div>
+        <div class="">
+            <i class="fa-solid fa-search"></i>
+        </div>
+    </div>
+    <div class="p-2 shadow-md rounded-b-md">
+        <form action="" method="get" class="ui form" id="filter-form">
+            <div class="field">
+                <input id="search" type="text" name="search" value="{{ search_query or '' }}"
+                       placeholder="{{ _('Search problems...') }}">
+            </div>
+            {% if has_fts %}
+            <div class="field">
+                <div class="ui checkbox">
+                    <input id="full_text" type="checkbox" name="full_text" value="1"
+                    {% if full_text %}checked{% endif %}>
+                    <label for="full_text">{{ _('Full text search') }}</label>
+                </div>
+            </div>
+            {% endif %}
+            {% if request.user.is_authenticated %}
+            <div class="field">
+                <div class="ui checkbox">
+                    <input id="hide_solved" type="checkbox" name="hide_solved" value="1"
+                            {% if hide_solved %}checked{% endif %}>
+                    <label for="hide_solved">{{ _('Hide solved problems') }}</label>
+                </div>
+            </div>
+            {% endif %}
+            <div class="field">
+                <label for="category">{{ _('Category') }}</label>
+                <div class="ui selection dropdown">
+                    <input type="hidden" name="category" onchange="this.form.submit()" {% if category %}value="{{category}}"{% endif %}>
+                    <i class="dropdown icon"></i>
+                    <div class="default text">{{ _('All') }}</div>
+                    <div class="menu">
+                        {% for group in categories %}
+                        <div class="item" data-value="{{ group.id }}">
+                            {{ group.full_name }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-1 field">
+                {% for type in problem_types %}
+                <div class="ui checkbox">
+                    <input type="checkbox" id="id_type_{{ loop.index }}" onchange="this.form.submit()" name="type" value="{{ type.id }}" {% if type.id in selected_types %}checked=checked{% endif %}>
+                    <label for="id_type_{{ loop.index }}" label="{{ type.full_name }}">{{ type.full_name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            {% if point_values %}
+            <div class="mx-4 mt-12 uislider" id="point-range"></div>
+            <input type="hidden" name="point_start" value="{% if point_start and point_start > point_values.min %}{{ point_start|floatformat(0) }}{% else %}{{ point_values.min|floatformat(0) }}{% endif %}">
+            <input type="hidden" name="point_end" value="{% if point_end and point_end < point_values.max %}{{ point_end|floatformat(0) }}{% else %}{{ point_values.max|floatformat(0) }}{% endif %}">
+            <script>
+                var slider = document.getElementById('point-range')
+                noUiSlider.create(slider, {
+                    start: [{% if point_start and point_start > point_values.min %}{{ point_start }}{% else %}{{ point_values.min }}{% endif %}, {% if point_end and point_end < point_values.max %}{{ point_end }}{% else %}{{ point_values.max }}{% endif %}],
+                    step: 1,
+                    range: {
+                        'min': {{ point_values.min }},
+                        'max': {{ point_values.max }}
+                    },
+                    connect: [false, true, false],
+                    tooltips: [
+                        wNumb({decimals: 0}),
+                        wNumb({decimals: 0})
+                    ]
+                });
+                slider.noUiSlider.on('update', function(values, handle) {
+                    if (handle) {
+                        $('input[name=point_end]').val(values[handle])
+                    } else {
+                        $('input[name=point_start]').val(values[handle])
+                    }
+                });
+                $('.selection.dropdown').dropdown();
+            </script>
+            {% endif %}
+            <button id="go" type="submit" class="w-full p-2 mt-4 font-bold text-white bg-blue-500 rounded-md">{{ _('Go') }}</button>
+        </form>
+    </div>
+</div>

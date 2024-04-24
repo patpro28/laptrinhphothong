@@ -1,0 +1,98 @@
+{% extends "common-content.html" %}
+
+{% block content_js_media %}
+    {% include "comments/media-js.html" %}
+{% endblock %}
+
+{% block content_media %}
+    {% include "comments/media-css.html" %}
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block body %}
+<div class="flex gap-4 mt-10">
+  <div class="flex flex-col items-center w-1/4 gap-4 my-10 text-xl">
+    <div class="">
+      <span class="font-bold">Author: </span>
+      {{ link_user(solution.author) }}
+    </div>
+    <div class="flex flex-col items-center gap-4 text-5xl" id=vote>
+      <a href="javascript:solution_upvote({{ solution.id }})" class="{% if vote == 1 %}text-green-50{%else%}text-green-500{% endif %} upvote-link"><i class="-rotate-90 fa-solid fa-play"></i></a>
+      <span class="score">{{ solution.score }}</span>
+      <a href="javascript:solution_downvote({{ solution.id }})" class="{% if vote == -1 %}text-red-50{%else%}text-red-500{% endif %} downvote-link"><i class="rotate-90 fa-solid fa-play"></i></a>
+    </div>
+  </div>
+  <div class="flex-1 border rounded-md content-description">
+      {% if not has_solved_problem and not request.user.is_superuser %}
+          <div class="p-2 mb-2 text-lg font-bold text-red-500">{{ _('Remember to use this editorial <b>only</b> when stuck, and <b>not to copy-paste code from it</b>. Please be respectful to the problem author and editorialist. <br> <b>Submitting an official solution before solving the problem yourself is a bannable offence.</b>') }}</div>
+      {% endif %}
+      <div class="p-4 text-xl prose max-w-none">
+        {{ solution.description|markdown('problem-full')|reference|str|safe }}
+      </div>
+  </div>
+</div>
+{% include "comments/list.html" %}
+{% endblock %}
+
+{% block bodyend %}
+    {% if REQUIRE_JAX %}
+        {% include "mathjax-load.html" %}
+    {% endif %}
+    {% include "comments/math.html" %}
+    <script>
+      function ajax_vote(url, id, delta, on_success) {
+        return $.ajax({
+          url: url,
+          type: 'POST',
+          data: {
+            id: id
+          },
+          success: function (data, textStatus, jqXHR) {
+            var score = $('.score');
+            score.text(parseInt(score.text()) + delta);
+            if (typeof on_success !== 'undefined')
+              on_success();
+          },
+          error: function (data, textStatus, jqXHR) {
+            alert('Could not vote: ' + data.responseText);
+          }
+        });
+      }
+      var get_$votes = function () {
+        var $vote = $('#vote');
+        return {
+            upvote: $vote.find('.upvote-link').first(),
+            downvote: $vote.find('.downvote-link').first()
+        };
+      };
+      window.solution_upvote = function (id) {
+        ajax_vote('{{ url('solution_upvote') }}', id, 1, function () {
+          var $votes = get_$votes();
+          if ($votes.downvote.hasClass('text-red-50')) {
+            $votes.downvote.removeClass('text-red-50');
+            $votes.downvote.addClass('text-red-500');
+          }
+          else {
+            $votes.upvote.addClass('text-green-50');
+            $votes.upvote.removeClass('text-green-500');
+          }
+        });
+      };
+
+      window.solution_downvote = function (id) {
+        ajax_vote('{{ url('solution_downvote') }}', id, -1, function () {
+          var $votes = get_$votes(id);
+          if ($votes.upvote.hasClass('text-green-50')) {
+            $votes.upvote.removeClass('text-green-50');
+            $votes.upvote.addClass('text-green-500');
+          }
+          else {
+            $votes.downvote.removeClass('text-red-500');
+            $votes.downvote.addClass('text-red-50');
+          }
+        });
+      };
+    </script>
+{% endblock %}

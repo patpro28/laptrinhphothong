@@ -1,0 +1,9 @@
+{% extends "flatpages/markdown.html" %}
+
+{% block body %}
+    <div class="prose max-w-none">{{ flatpage.content|markdown('flatpage')|reference }}</div>
+{% endblock %}
+
+{% block bodyend %}
+    {% if REQUIRE_JAX %}{% include "mathjax-load.html" %}{% endif %}
+{% endblock %}

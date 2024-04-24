@@ -1,0 +1,468 @@
+{% extends "common-content.html" %}
+
+{% block media %}
+{{ form.media.css }}
+<link rel="stylesheet" type="text/css" href="{{ static('admin/css/forms.css') }}">
+<style>
+.help {
+    color: #999 !important;
+    font-size: 12px;
+}
+.help:before {
+    font-family: FontAwesome;
+    content: "\f05a";
+}
+select {
+    border-radius: 5px;
+    height: 25px;
+    width: 25%;
+    font-size: 14px;
+}
+fieldset {
+    width: 100%;
+}
+.ui.fluid.dropdown {
+    width: unset !important;
+}
+.hidden {
+    display: none !important;
+}
+</style>
+{% endblock %}
+
+{% block js_media %}
+<script src="{{ static('admin/js/jquery.init.js') }}"></script>
+{{ form.media.js }}
+{% endblock %}
+
+{% block body %}
+<div class="ui unstackable grid">
+    <div class="row">
+        <div class="column">
+            <form action="" method="post" class="ui form segment">
+                {% csrf_token %}
+                {% if form.non_field_errors() %}
+                {% for error in form.non_field_errors() %}
+                    <div class="ui negative message">
+                    <i class="close icon"></i>
+                    {{ error }}
+                    </div>
+                {% endfor %}
+                {% endif %}
+                <div class="ui one column grid">
+                    <div class="row">
+                        <fieldset class="column">
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    <label for="{{ form.code.id_for_label }}">{{ form.code.label }}</label>
+                                    {{ form.code }}
+                                    {% if form.code.help_text %}
+                                        <div class="help" style="margin-left: 0px">
+                                            {{ form.code.help_text }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                                    {{ form.name }}
+                                    {% if form.name.help_text %}
+                                        <div class="help" style="margin-left: 0px">
+                                            {{ form.name.help_text }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    <label>{{ form.authors.label }}</label>
+                                    {{ form.authors }}
+                                    {% if form.authors.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                            {{ form.authors.help_text }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <label>{{ form.curators.label }}</label>
+                                    {{ form.curators }}
+                                    {% if form.curators.help_text %}
+                                        <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                            {{ form.curators.help_text }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <label>{{ form.testers.label }}</label>
+                                    {{ form.testers }}
+                                    {% if form.testers.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.testers.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                        </fieldset>
+                    </div>
+                    <div class="row">
+                        <fieldset class="column">
+                            <legend class="ui header">{{ _('Settings') }}</legend>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <div class="ui checkbox">
+                                        {{ form.is_public }}
+                                        <label for="{{ form.is_public.id_for_label }}">{{ form.is_public.label }}</label>
+                                    </div>
+                                    {% if form.is_public.help_text %}
+                                        <div class="help" style="margin-left: 0px">
+                                            {{ form.is_public.help_text }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <div class="ui checkbox">
+                                        {{ form.is_manually_managed }}
+                                        <label for="{{ form.is_manually_managed.id_for_label }}">{{ form.is_manually_managed.label }}</label>
+                                    </div>
+                                    {% if form.is_manually_managed.help_text %}
+                                        <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                            {{ form.is_manually_managed.help_text }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <label>{{ form.banned_users.label }}</label>
+                                    {{ form.banned_users }}
+                                    {% if form.banned_users.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.banned_users.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <div class="ui checkbox">
+                                        {{ form.is_organization_private }}
+                                        <label for="{{ form.is_organization_private.id_for_label }}">{{ form.is_organization_private.label }}</label>
+                                    </div>
+                                    {% if form.is_organization_private.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                            {{ form.is_organization_private.help_text }}
+                                        </div>
+                                        {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <label for="{{ form.organizations.id_for_label }}">{{ form.organizations.label }}</label>
+                                    {{ form.organizations }}
+                                    {% if form.organizations.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                            {{ form.organizations.help_text }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    {{ form.submission_source_visibility_mode.label_tag() }}
+                                    {{ form.submission_source_visibility_mode }}
+                                    {% if form.submission_source_visibility_mode.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.submission_source_visibility_mode.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    {{ form.testcase_visibility_mode.label_tag() }}
+                                    {{ form.testcase_visibility_mode }}
+                                    {% if form.testcase_visibility_mode.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.testcase_visibility_mode.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="row">
+                        <fieldset class="column">
+                            <legend class="ui header">{{ _('Description') }}</legend>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    <div class="ui checkbox">
+                                        {{ form.is_full_markup }}
+                                        <label for="{{ form.is_full_markup.id_for_label }}">{{ form.is_full_markup.label }}</label>
+                                    </div>
+                                    {% if form.is_full_markup.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.is_full_markup.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    {{ form.description.label_tag() }}
+                                    {{ form.description }}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    {{ form.license.label_tag() }}
+                                    {{ form.license }}
+                                    {% if form.license.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.license.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    {{ form.og_image.label_tag() }}
+                                    {{ form.og_image }}
+                                    {% if form.og_image.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.og_image.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="field">
+                                    {{ form.summary.label_tag() }}
+                                    {{ form.summary }}
+                                    {% if form.summary.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.summary.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="row">
+                        <fieldset class="column">
+                            <legend class="ui header">{{ _('Classify') }}</legend>
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    {{ form.types.label_tag() }}
+                                    {{ form.types }}
+                                    {% if form.types.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.types.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    {{ form.group.label_tag() }}
+                                    {{ form.group }}
+                                    {% if form.group.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.group.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    {{ form.classes.label_tag() }}
+                                    {{ form.classes }}
+                                    {% if form.classes.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.classes.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="row">
+                        <fieldset class="column">
+                            <legend class="ui header">{{ _('Limit') }}</legend>
+                            <div class="equal width two fields">
+                                <div class="required field">
+                                    {{ form.time_limit.label_tag() }}
+                                    {{ form.time_limit }}
+                                    {% if form.time_limit.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.time_limit.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="required field">
+                                    {{ form.memory_limit.label_tag() }}
+                                    {{ form.memory_limit }}
+                                    {% if form.memory_limit.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.memory_limit.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>                    
+                            </div>
+                            <div class="equal width three fields">
+                                <div class="required field">
+                                    {{ form.points.label_tag() }}
+                                    {{ form.points }}
+                                    {% if form.points.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.points.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="field">
+                                    <div class="ui checkbox">
+                                        {{ form.partial }}
+                                        <label for="{{ form.partial.id_for_label }}">{{ form.partial.label }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="equal width fields">
+                                <div class="required field">
+                                    <label for="{{ form.allowed_languages.id_for_label }}">
+                                        {{ form.allowed_languages.label }}
+                                        
+                                    </label>
+                                    {{ form.allowed_languages }}
+                                    {% if form.allowed_languages.help_text %}
+                                    <div class="help" style="margin-left: 0px; margin-top: 5px;">
+                                        {{ form.allowed_languages.help_text }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ui checkbox">
+                                <input type="checkbox" id="checkall" class="checkall">
+                                <label for="checkall">{{ _('Check all') }}</label>
+                            </div>
+                            <script type="text/javascript">
+                                django.jQuery(function ($) {
+                                    var original = $('div#id_allowed_languages');
+                                    $('.checkall').click(function () {
+                                        original.find(':checkbox').prop('checked', this.checked);
+                                    });
+                                });
+                            </script>
+                        </fieldset>
+                    </div>
+                    <div class="row">
+                        <fieldset class="column">
+                            <legend class="ui header">{{ _('Language limit') }}</legend>
+                            
+                            {{ languagelimitform.management_form }}
+                            <div id="language_limits">
+                                {% for language_form in languagelimitform %}
+                                <div class="equal width four inline fields language_limits" id="language_limits_form_{{ loop.index0 }}">
+                                    {% for hidden in language_form.hidden_fields() %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <div class="inline field">
+                                        <label for="{{ language_form.language.id_for_label }}">{{ language_form.language.label }}</label>
+                                        {{ language_form.language }}
+                                    </div>
+                                    <div class="inline field">
+                                        <label for="{{ language_form.time_limit.id_for_label }}">{{ language_form.time_limit.label }}</label>
+                                        {{ language_form.time_limit }}
+                                    </div>
+                                    <div class="inline field">
+                                        <label for="{{ language_form.memory_limit.id_for_label }}">{{ language_form.memory_limit.label }}</label>
+                                        {{ language_form.memory_limit }}
+                                    </div>
+                                    {% if languagelimitform.can_delete %}
+                                    <div class="inline field">
+                                        <div class="ui checkbox">
+                                            {{ language_form.DELETE }}
+                                            <label for="{{language_form.DELETE.id_for_label }}">{{ language_form.DELETE.label }}</label>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% with language_form=languagelimitform.empty_form %}
+                            <div class="equal width four inline fields hidden" id="language_limits_empty_form">
+                                {% for hidden in language_form.hidden_fields() %}
+                                    {{ hidden }}
+                                {% endfor %}
+                                <div class="inline field">
+                                    <label for="{{ language_form.language.id_for_label }}">{{ language_form.language.label }}</label>
+                                    {{ language_form.language }}
+                                </div>
+                                <div class="inline field">
+                                    <label for="{{ language_form.time_limit.id_for_label }}">{{ language_form.time_limit.label }}</label>
+                                    {{ language_form.time_limit }}
+                                </div>
+                                <div class="inline field">
+                                    <label for="{{ language_form.memory_limit.id_for_label }}">{{ language_form.memory_limit.label }}</label>
+                                    {{ language_form.memory_limit }}
+                                </div>
+                                {% if languagelimitform.can_delete %}
+                                <div class="inline field">
+                                    <div class="ui checkbox">
+                                        {{ language_form.DELETE }}
+                                        <label for="{{language_form.DELETE.id_for_label}}">{{ language_form.DELETE.label }}</label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endwith %}
+                            <a class="ui button" id="add_language_limits" onclick="add_new_form('language_limits')">{{ _('Add more') }}</a>
+                        </fieldset>
+                    </div>
+                    <div class="row">
+                        <div class="column">
+                            <button class="fluid ui primary button" style="margin-top: 10px">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block bodyend %}
+{{super() }}
+<script>
+    $(".ui.dropdown").dropdown();
+    function add_new_form(form, event) {
+        if (event) {
+            event.preventDefault();
+        }
+        const maxForm = document.getElementById('id_' + form + '-MAX_NUM_FORMS').value
+        const totalForm = document.getElementById('id_' + form + '-TOTAL_FORMS')
+        const formcopy = document.getElementById(form + '_empty_form').cloneNode(true)
+        const currentForm = document.getElementsByClassName(form)
+        const currentCount = totalForm.value
+        console.log(currentCount)
+        formcopy.classList.add(form);
+        formcopy.classList.remove('hidden');
+        formcopy.setAttribute('id', form + '_form_' + currentCount)
+        formcopy.innerHTML = formcopy.innerHTML.replace(/__prefix__/g, currentCount)
+        totalForm.setAttribute('value', parseInt(currentCount) + 1)
+        const target = document.getElementById(form)
+        target.append(formcopy)
+        if (totalForm.value == maxForm) {
+            const btn = document.getElementById('add_' + form)
+            btn.classList.add('disabled')
+        }
+    };
+    
+</script>
+{% endblock bodyend %}
