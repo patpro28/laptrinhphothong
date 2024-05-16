@@ -114,7 +114,6 @@ class ProblemTestCase(models.Model):
 class PublicSolution(models.Model):
     author = models.ForeignKey("judge.Profile", verbose_name=_("user"), on_delete=models.CASCADE)
     problem = models.ForeignKey("judge.Problem", verbose_name=_("problem"), on_delete=models.CASCADE)
-    contest = models.ForeignKey("judge.Contest", verbose_name=_("contest"), on_delete=models.CASCADE, null=True, blank=True)
     description = models.TextField(_("solution"))
     score = models.IntegerField(_('votes'), default=0)
     created = models.DateTimeField(_("date created"), auto_now_add=True)

@@ -3,9 +3,6 @@
 {% block tabs %}
     {{ make_tab('about', 'fa-info-circle', url('user_page', user.username), _('About')) }}
     {{ make_tab('problems', 'fa-puzzle-piece', url('user_problems', user.username), _('Problems')) }}
-    {% if request.user.is_superuser and user != request.user and not user.is_superuser %}
-        {{ make_tab('impersonate', 'fa-eye', url('impersonate-start', user.id), _('Impersonate')) }}
-    {% endif %}
     {% if perms.judge.change_profile %}
         {{ make_tab('admin', 'fa-edit', url('admin:judge_profile_change', user.id), _('Admin Profile')) }}
     {% endif %}

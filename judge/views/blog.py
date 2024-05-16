@@ -8,8 +8,8 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from judge.comments import CommentedDetailView
-from judge.models import BlogPost, Comment, Contest, Language, Problem, ProblemClarification, Profile, Submission, \
-    Ticket
+from judge.models import (BlogPost, Comment, Language, Problem,
+                          ProblemClarification, Profile, Submission, Ticket)
 from judge.utils.cachedict import CacheDict
 from judge.utils.diggpaginator import DiggPaginator
 from judge.utils.problems import user_completed_ids
@@ -43,14 +43,6 @@ class PostList(ListView):
                                          .order_by('-date', 'code')[:settings.DMOJ_BLOG_NEW_PROBLEM_COUNT]
         context['page_titles'] = CacheDict(lambda page: Comment.get_page_title(page))
 
-        context['has_clarifications'] = False
-        if self.request.user.is_authenticated:
-            participation = self.request.profile.current_contest
-            if participation:
-                clarifications = ProblemClarification.objects.filter(problem__in=participation.contest.problems.all())
-                context['has_clarifications'] = clarifications.count() > 0
-                context['clarifications'] = clarifications.order_by('-date')
-
         context['user_count'] = Profile.objects.count
         context['problem_count'] = Problem.get_public_problems().count
         context['submission_count'] = lambda: Submission.objects.aggregate(max_id=Max('id'))['max_id'] or 0
@@ -74,12 +66,6 @@ class PostList(ListView):
                                                       .annotate(points=Max('points'), latest=Max('date'))
                                                       .order_by('-latest')
                                                       [:settings.DMOJ_BLOG_RECENTLY_ATTEMPTED_PROBLEMS_COUNT])
-
-        visible_contests = Contest.get_visible_contests(self.request.user).filter(is_visible=True) \
-                                  .order_by('start_time')
-
-        context['current_contests'] = visible_contests.filter(start_time__lte=now, end_time__gt=now)
-        context['future_contests'] = visible_contests.filter(start_time__gt=now)
 
         if self.request.user.is_authenticated:
             context['own_open_tickets'] = (

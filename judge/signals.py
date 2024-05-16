@@ -9,9 +9,8 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from .caching import finished_submission
-from .models import (BlogPost, Comment, Contest, ContestSubmission, Judge,
-                     Language, License, MiscConfig, Organization, Problem,
-                     Profile, Submission, User)
+from .models import (BlogPost, Comment, Judge, Language, License, MiscConfig,
+                     Organization, Problem, Profile, Submission, User)
 
 
 def get_pdf_path(basename):
@@ -64,18 +63,6 @@ def profile_update(sender, instance, **kwargs):
                        for org_id in instance.organizations.values_list('id', flat=True)])
 
 
-@receiver(post_save, sender=Contest)
-def contest_update(sender, instance, **kwargs):
-    if hasattr(instance, '_updating_stats_only'):
-        return
-
-    for lang, _ in settings.LANGUAGES:
-        unlink_if_exists(get_pdf_contest_path('%s.%s.pdf' % (instance.key, lang)))
-
-    cache.delete_many(['generated-meta-contest:%d' % instance.id] +
-                      [make_template_fragment_key('contest_html', (instance.id,))])
-
-
 @receiver(post_save, sender=License)
 def license_update(sender, instance, **kwargs):
     cache.delete(make_template_fragment_key('license_html', (instance.id,)))
@@ -116,13 +103,6 @@ def submission_delete(sender, instance, **kwargs):
     instance.problem.update_stats()
 
 
-@receiver(post_delete, sender=ContestSubmission)
-def contest_submission_delete(sender, instance, **kwargs):
-    participation = instance.participation
-    participation.recompute_results()
-    Submission.objects.filter(id=instance.submission_id).update(contest_object=None)
-
-
 @receiver(post_save, sender=Organization)
 def organization_update(sender, instance, **kwargs):
     cache.delete_many([make_template_fragment_key('organization_html', (instance.id, ))])
@@ -157,8 +137,3 @@ def misc_config_update(sender, instance, **kwargs):
 @receiver(post_delete, sender=MiscConfig)
 def misc_config_delete(sender, instance, **kwargs):
     misc_config_cache_delete(instance.key)
-
-
-@receiver(post_save, sender=ContestSubmission)
-def contest_submission_update(sender, instance, **kwargs):
-    Submission.objects.filter(id=instance.submission_id).update(contest_object_id=instance.participation.contest_id)

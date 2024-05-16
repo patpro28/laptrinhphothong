@@ -5,7 +5,7 @@ from django.utils.encoding import smart_str
 from django.views.generic.list import BaseListView
 
 from judge.jinja2.gravatar import gravatar
-from judge.models import Comment, Contest, Organization, Problem, Profile
+from judge.models import Comment, Organization, Problem, Profile
 
 
 def _get_user_queryset(term):
@@ -58,12 +58,6 @@ class ProblemSelect2View(Select2View):
                       .filter(Q(code__icontains=self.term) | Q(name__icontains=self.term)).distinct()
 
 
-class ContestSelect2View(Select2View):
-    def get_queryset(self):
-        return Contest.get_visible_contests(self.request.user) \
-                      .filter(Q(key__icontains=self.term) | Q(name__icontains=self.term))
-
-
 class CommentSelect2View(Select2View):
     def get_queryset(self):
         return Comment.objects.filter(page__icontains=self.term)
@@ -99,16 +93,6 @@ class UserSearchSelect2View(BaseListView):
 
     def get_name(self, obj):
         return str(obj)
-
-
-class ContestUserSearchSelect2View(UserSearchSelect2View):
-    def get_queryset(self):
-        contest = get_object_or_404(Contest, key=self.kwargs['contest'])
-        if not contest.is_accessible_by(self.request.user) or not contest.can_see_full_scoreboard(self.request.user):
-            raise Http404()
-
-        return Profile.objects.filter(contest_history__contest=contest,
-                                      username__icontains=self.term).distinct()
 
 
 class TicketUserSelect2View(UserSearchSelect2View):

@@ -1,11 +1,5 @@
 {% extends "base.html" %}
 
-{% block media %}
-<link rel="stylesheet" href="{{ static('semantic/components/accordion.min.css') }}">
-<link rel="stylesheet" href="{{ static('semantic/components/dropdown.min.css') }}">
-<link rel="stylesheet" href="{{ static('semantic/components/transition.min.css') }}">
-{% endblock media %}
-
 {% block header %}
     <span class="inline-flex flex-col items-end">
         <span class="text-sm text-gray-400 text-end">{{ submission.date|date(_("N j, Y, g:i a")) }}

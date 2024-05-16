@@ -10,7 +10,9 @@
             "path": "/problems/",
             "regex": "^/problem",
             "rght": 2,
-            "tree_id": 1
+            "tree_id": 1,
+            "icon": "fa-book-open",
+            "is_root": true
         },
         "model": "judge.navigationbar",
         "pk": 1
@@ -26,7 +28,9 @@
             "path": "/submissions/",
             "regex": "^/submi|^/src/",
             "rght": 2,
-            "tree_id": 2
+            "tree_id": 2,
+            "icon": "fa-table-list",
+            "is_root": true
         },
         "model": "judge.navigationbar",
         "pk": 2
@@ -42,7 +46,9 @@
             "path": "/users/",
             "regex": "^/user",
             "rght": 2,
-            "tree_id": 3
+            "tree_id": 3,
+            "icon": "fa-users",
+            "is_root": true
         },
         "model": "judge.navigationbar",
         "pk": 3
@@ -58,7 +64,9 @@
             "path": "/contests/",
             "regex": "^/contest",
             "rght": 2,
-            "tree_id": 4
+            "tree_id": 4,
+            "icon": "fa-trophy",
+            "is_root": true
         },
         "model": "judge.navigationbar",
         "pk": 5
@@ -74,7 +82,9 @@
             "path": "/about/",
             "regex": "^/about/$",
             "rght": 4,
-            "tree_id": 5
+            "tree_id": 5,
+            "icon": "fa-info",
+            "is_root": true
         },
         "model": "judge.navigationbar",
         "pk": 6

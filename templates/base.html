@@ -326,7 +326,7 @@
                 {% if content_title %}{{ content_title }}{% else %}{{ title }}{% endif %}
                 {% endblock title_row %}
             </div>
-            <div class="flex items-center space-x-6 group">
+            <div class="flex items-center space-x-6">
                 <div>
                     <a href="javascript:void(0)" onclick="submit_language('vi')" class="">
                         <img src="{{ static('icons/vn_flag.svg') }}" alt="vn" class="object-cover w-6 h-4">
@@ -338,7 +338,7 @@
                     </a>
                 </div>
                 {% if request.user.is_authenticated %}
-                <div class="relative">
+                <div class="relative group">
                     <a class="flex items-center space-x-2" href="{{ url('user_page') }}">
                         <img class="w-10 h-10 border-2 rounded-full" src="{{ gravatar(request.user, 80) }}"
                             alt="{{ request.user.username }}">
@@ -352,11 +352,7 @@
                         class="absolute rounded-md max-h-0 overflow-hidden min-w-fit transition-[max-height] duration-500 ease-in-out group-hover:max-h-80 [&>*]:whitespace-nowrap flex flex-col right-0 bg-indigo-900/75 w-full text-white divide-y [&>*]:p-3">
                         <a href="{{ url('user_edit_profile', request.user.username) }}" class="hover:bg-indigo-900">Edit
                             profile</a>
-                        {% if request.user.is_impersonate %}
-                        <a href="{{ url('impersonate-stop') }}" class="hover:bg-indigo-900">Stop impersonating</a>
-                        {% else %}
                         <a href="{{ url('auth_logout') }}" class="hover:bg-indigo-900">Logout</a>
-                        {% endif %}
                     </div>
                 </div>
                 {% else %}

@@ -13,7 +13,6 @@ from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 from reversion.models import Version
 
-from judge.models.contest import Contest
 from judge.models.interface import BlogPost
 from judge.models.problem import Problem, Solution
 from judge.models.profile import Profile
@@ -29,8 +28,8 @@ class VersionRelation(GenericRelation):
     def __init__(self):
         super(VersionRelation, self).__init__(Version, object_id_field='object_id')
 
-    def get_extra_restriction(self, where_class, alias, remote_alias):
-        cond = super(VersionRelation, self).get_extra_restriction(where_class, alias, remote_alias)
+    def get_extra_restriction(self, alias, remote_alias):
+        cond = super(VersionRelation, self).get_extra_restriction(alias, remote_alias)
         field = self.remote_field.model._meta.get_field('db')
         lookup = field.get_lookup('exact')(field.get_col(remote_alias), 'default')
         cond.add(lookup, 'AND')
@@ -63,12 +62,10 @@ class Comment(MPTTModel):
 
         problem_cache = CacheDict(lambda code: Problem.objects.defer('description', 'summary').get(code=code))
         solution_cache = CacheDict(lambda code: Solution.objects.defer('content').get(problem__code=code))
-        contest_cache = CacheDict(lambda key: Contest.objects.defer('description').get(key=key))
         blog_cache = CacheDict(lambda id: BlogPost.objects.defer('summary', 'content').get(id=id))
 
         problem_access = CacheDict(lambda code: problem_cache[code].is_accessible_by(user))
         solution_access = CacheDict(lambda code: problem_access[code] and solution_cache[code].is_accessible_by(user))
-        contest_access = CacheDict(lambda key: contest_cache[key].is_accessible_by(user))
         blog_access = CacheDict(lambda id: blog_cache[id].can_see(user))
 
         if batch is None:
@@ -87,9 +84,6 @@ class Comment(MPTTModel):
                     elif comment.page.startswith('s:'):
                         has_access = solution_access[page_key]
                         comment.page_title = _('Editorial for %s') % problem_cache[page_key].name
-                    elif comment.page.startswith('c:'):
-                        has_access = contest_access[page_key]
-                        comment.page_title = contest_cache[page_key].name
                     elif comment.page.startswith('b:'):
                         has_access = blog_access[page_key]
                         comment.page_title = blog_cache[page_key].title
@@ -110,8 +104,6 @@ class Comment(MPTTModel):
             link = None
             if self.page.startswith('p:'):
                 link = reverse('problem_detail', args=(self.page[2:],))
-            elif self.page.startswith('c:'):
-                link = reverse('contest_view', args=(self.page[2:],))
             elif self.page.startswith('b:'):
                 key = 'blog_slug:%s' % self.page[2:]
                 slug = cache.get(key)
@@ -133,8 +125,6 @@ class Comment(MPTTModel):
         try:
             if page.startswith('p:'):
                 return Problem.objects.values_list('name', flat=True).get(code=page[2:])
-            elif page.startswith('c:'):
-                return Contest.objects.values_list('name', flat=True).get(key=page[2:])
             elif page.startswith('b:'):
                 return BlogPost.objects.values_list('title', flat=True).get(id=page[2:])
             elif page.startswith('s:'):
@@ -153,8 +143,6 @@ class Comment(MPTTModel):
                 return Problem.objects.get(code=self.page[2:]).is_accessible_by(user)
             elif self.page.startswith('s:'):
                 return Solution.objects.get(problem__code=self.page[2:]).is_accessible_by(user)
-            elif self.page.startswith('c:'):
-                return Contest.objects.get(key=self.page[2:]).is_accessible_by(user)
             elif self.page.startswith('b:'):
                 return BlogPost.objects.get(id=self.page[2:]).can_see(user)
             else:
@@ -167,18 +155,6 @@ class Comment(MPTTModel):
 
     def __str__(self):
         return '%(page)s by %(user)s' % {'page': self.page, 'user': self.author.user.username}
-
-        # Only use this when queried with
-        # .prefetch_related(Prefetch('votes', queryset=CommentVote.objects.filter(voter_id=profile_id)))
-        # It's rather stupid to put a query specific property on the model, but the alternative requires
-        # digging Django internals, and could not be guaranteed to work forever.
-        # Hence it is left here for when the alternative breaks.
-        # @property
-        # def vote_score(self):
-        #    queryset = self.votes.all()
-        #    if not queryset:
-        #        return 0
-        #    return queryset[0].score
 
 
 class CommentVote(models.Model):

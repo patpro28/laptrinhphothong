@@ -15,16 +15,6 @@ from judge.widgets import AdminMartorWidget
 
 
 class ProfileForm(ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if 'current_contest' in self.base_fields:
-            # form.fields['current_contest'] does not exist when the user has only view permission on the model.
-            self.fields['current_contest'].queryset = self.instance.contest_history.select_related('contest') \
-                .only('contest__name', 'user_id', 'virtual')
-            self.fields['current_contest'].label_from_instance = \
-                lambda obj: '%s v%d' % (obj.contest.name, obj.virtual) if obj.virtual else obj.contest.name
-
     class Meta:
         widgets = {
             'about': AdminMartorWidget(attrs={'data-markdownfy-url': reverse_lazy('profile_preview')}),
@@ -53,7 +43,7 @@ class ProfileAdmin(NoBatchDeleteMixin, admin.ModelAdmin):
         }),
         (_('Information'), {
             "fields": (
-                'first_name', 'last_name', 'email', 'display_rank', 'about', 
+                'display_rank', 'about', 
             ),
         }),
         (_('Settings'), {
@@ -63,15 +53,18 @@ class ProfileAdmin(NoBatchDeleteMixin, admin.ModelAdmin):
         }),
         (_('Check'), {
             "fields": (
-                'ip', 'notes', 'current_contest'
+                'ip', 'notes', # 'current_contest'
             ),
         }),
     )
-    readonly_fields = ('user', 'ip', 'current_contest')
+    readonly_fields = (
+        'user',
+        'ip',
+    )
     list_display = ('user', 'fullname', 'timezone_full', 'last_access', 'ip', 'show_public')
     ordering = ('user',)
     search_fields = ('user__username', 'ip', 'user__email')
-    list_filter = ('language', TimezoneFilter,)
+    list_filter = ('language', TimezoneFilter)
     actions = ('recalculate_points',)
     actions_on_top = True
     actions_on_bottom = True
@@ -85,8 +78,8 @@ class ProfileAdmin(NoBatchDeleteMixin, admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         fields = self.readonly_fields
-        if obj:
-            fields += ('username',)
+        if not request.user.is_superadmin:
+            fields += ('organizations',)
         return fields
 
     def show_public(self, obj):
@@ -95,8 +88,8 @@ class ProfileAdmin(NoBatchDeleteMixin, admin.ModelAdmin):
     show_public.short_description = ''
 
     def fullname(self, obj):
-        return obj.fullname
-    fullname.admin_order_field = 'first_name'
+        return obj.name
+    fullname.admin_order_field = 'user__first_name'
     fullname.short_description = _('Full name')
 
     def timezone_full(self, obj):

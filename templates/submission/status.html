@@ -1,9 +1,6 @@
 {% extends "submission/info-base.html" %}
 {% block js_media %}
     <script type="text/javascript" src="{{ static('event.js') }}?1"></script>
-    <script src="{{ static('semantic/components/accordion.min.js') }}"></script>
-    <script src="{{ static('semantic/components/dropdown.min.js') }}"></script>
-    <script src="{{ static('semantic/components/transition.min.js') }}"></script>
     {% if not submission.is_graded and EVENT_LAST_MSG %}
         <script type="text/javascript">
             $(function () {

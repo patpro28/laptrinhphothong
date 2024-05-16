@@ -286,5 +286,23 @@
             "description": "Compile options: `g++ -std=c++20 -Wall -DONLINE_JUDGE -O2 -lm -fmax-errors=5 -march=native -s`",
             "extension": "cpp"
         }
+    },
+    {
+        "model": "judge.language",
+        "pk": 19,
+        "fields": {
+            "key": "SCRATCH",
+            "name": "Scratch",
+            "short_name": "SCRATCH",
+            "common_name": "Scratch",
+            "ace": "python",
+            "pygments": "python3",
+            "template": "",
+            "info": "",
+            "description": "",
+            "extension": "py",
+            "file_only": true,
+            "file_size_limit": 1
+        }
     }
 ]

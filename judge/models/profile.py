@@ -91,6 +91,8 @@ class User(AbstractUser):
         },
     )
 
+    is_superadmin = models.BooleanField(_('superadmin status'), default=False)
+
     REQUIRED_FIELDS = []
 
 
@@ -119,8 +121,6 @@ class Profile(models.Model):
     is_unlisted = models.BooleanField(verbose_name=_('unlisted user'), help_text=_('User will not be ranked.'),
                                       default=False)
     rating = models.IntegerField(null=True, default=None)
-    current_contest = models.OneToOneField('ContestParticipation', verbose_name=_('current contest'),
-                                           null=True, blank=True, related_name='+', on_delete=models.SET_NULL)
     notes = models.TextField(verbose_name=_('internal notes'), null=True, blank=True,
                              help_text=_('Notes for administrators regarding this user.'))
     data_last_downloaded = models.DateTimeField(verbose_name=_('last data download time'), null=True, blank=True)
@@ -174,19 +174,6 @@ class Profile(models.Model):
 
     calculate_points.alters_data = True
 
-    def remove_contest(self):
-        self.current_contest = None
-        self.save()
-
-    remove_contest.alters_data = True
-
-    def update_contest(self):
-        contest = self.current_contest
-        if contest is not None and (contest.ended or not contest.contest.is_accessible_by(self)):
-            self.remove_contest()
-
-    update_contest.alters_data = True
-
     def get_absolute_url(self):
         return reverse('user_page', args=(self.username,))
 
@@ -205,8 +192,8 @@ class Profile(models.Model):
 
     class Meta:
         ordering = ['id']
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+        verbose_name = _('profile')
+        verbose_name_plural = _('profiles')
 
 
 class OrganizationRequest(models.Model):

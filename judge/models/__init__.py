@@ -3,15 +3,10 @@ from reversion import revisions
 from judge.models.choices import (ACE_THEMES, EFFECTIVE_MATH_ENGINES,
                                   MATH_ENGINES_CHOICES, TIMEZONE)
 from judge.models.comment import Comment, CommentLock, CommentVote
-from judge.models.contest import (Contest, ContestLevel, ContestMoss,
-                                  ContestParticipation, ContestProblem,
-                                  ContestSubmission, ContestTag, Rating,
-                                  SampleContest, SampleContestProblem)
 from judge.models.interface import (BlogPost, CourseModel, Log, MiscConfig,
                                     NavigationBar, validate_regex)
 from judge.models.problem import (LanguageLimit, License, Problem,
-                                  ProblemClarification, ProblemClass,
-                                  ProblemGroup, ProblemTranslation,
+                                  ProblemClarification, ProblemTranslation,
                                   ProblemType, Solution,
                                   SubmissionSourceAccess,
                                   TranslatedProblemQuerySet)
@@ -29,8 +24,6 @@ revisions.register(Language)
 revisions.register(Profile, exclude=['points', 'last_access', 'ip', 'rating'])
 revisions.register(Problem, follow=['language_limits'])
 revisions.register(LanguageLimit)
-revisions.register(Contest, follow=['contest_problems'])
-revisions.register(ContestProblem)
 revisions.register(Organization)
 revisions.register(BlogPost)
 revisions.register(Solution)

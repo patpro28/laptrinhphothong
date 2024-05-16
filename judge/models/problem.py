@@ -30,19 +30,6 @@ def disallowed_characters_validator(text):
                               params={'value': ''.join(common_disallowed_characters)})
 
 
-class ProblemCategory(models.Model):
-    name = models.CharField(max_length=20, verbose_name=_('problem category ID'), unique=True)
-    full_name = models.CharField(max_length=100, verbose_name=_('problem category name'))
-
-    def __str__(self):
-        return user_gettext(self.full_name)
-
-    class Meta:
-        ordering = ['full_name']
-        verbose_name = _('problem category')
-        verbose_name_plural = _('problem categories')
-        
-
 class ProblemType(models.Model):
     name = models.CharField(max_length=20, verbose_name=_('problem type ID'), unique=True)
     full_name = models.CharField(max_length=100, verbose_name=_('problem type name'))
@@ -54,32 +41,6 @@ class ProblemType(models.Model):
         ordering = ['full_name']
         verbose_name = _('problem type')
         verbose_name_plural = _('problem types')
-
-
-class ProblemGroup(models.Model):
-    name = models.CharField(max_length=20, verbose_name=_('problem group ID'), unique=True)
-    full_name = models.CharField(max_length=100, verbose_name=_('problem group name'))
-
-    def __str__(self):
-        return self.full_name
-
-    class Meta:
-        ordering = ['full_name']
-        verbose_name = _('problem group')
-        verbose_name_plural = _('problem groups')
-
-
-class ProblemClass(models.Model):
-    name = models.CharField(max_length=20, verbose_name=_('problem class ID'), unique=True)
-    full_name = models.CharField(max_length=100, verbose_name=_('problem class name'))
-
-    def __str__(self):
-        return self.full_name
-
-    class Meta:
-        ordering = ['full_name']
-        verbose_name = _('problem class')
-        verbose_name_plural = _('problem classes')
 
 
 class License(models.Model):
@@ -151,32 +112,21 @@ class Problem(models.Model):
     authors = models.ManyToManyField(Profile, verbose_name=_('creators'), blank=True, related_name='authored_problems',
                                      help_text=_('These users will be able to edit the problem, '
                                                  'and be listed as authors.'))
-    curators = models.ManyToManyField(Profile, verbose_name=_('curators'), blank=True, related_name='curated_problems',
-                                      help_text=_('These users will be able to edit the problem, '
-                                                  'but not be listed as authors.'))
-    testers = models.ManyToManyField(Profile, verbose_name=_('testers'), blank=True, related_name='tested_problems',
-                                     help_text=_(
-                                         'These users will be able to view the private problem, but not edit it.'))
     types = models.ManyToManyField(ProblemType, verbose_name=_('problem types'),
                                    help_text=_('The type of problem, '
                                                "as shown on the problem's page."))
-    group = models.ForeignKey(ProblemGroup, verbose_name=_('problem group'), on_delete=models.SET_NULL, null=True,
-                              help_text=_('The group of problem, shown under Category in the problem list.'))
-    classes = models.ForeignKey(ProblemClass, verbose_name=_("problem class"), on_delete=models.SET_NULL,
-                              help_text=_('The class of problem, shown under Class in the problem list.'), null=True, blank=False)
-
-    time_limit = models.FloatField(verbose_name=_('time limit'),
+    time_limit = models.FloatField(verbose_name=_('time limit'), default=1.0,
                                    help_text=_('The time limit for this problem, in seconds. '
                                                'Fractional seconds (e.g. 1.5) are supported.'),
                                    validators=[MinValueValidator(settings.DMOJ_PROBLEM_MIN_TIME_LIMIT),
                                                MaxValueValidator(settings.DMOJ_PROBLEM_MAX_TIME_LIMIT)])
-    memory_limit = models.PositiveIntegerField(verbose_name=_('memory limit'),
+    memory_limit = models.PositiveIntegerField(verbose_name=_('memory limit'), default=256000,
                                                help_text=_('The memory limit for this problem, in kilobytes '
                                                            '(e.g. 64mb = 65536 kilobytes).'),
                                                validators=[MinValueValidator(settings.DMOJ_PROBLEM_MIN_MEMORY_LIMIT),
                                                            MaxValueValidator(settings.DMOJ_PROBLEM_MAX_MEMORY_LIMIT)])
     short_circuit = models.BooleanField(default=False)
-    points = models.FloatField(verbose_name=_('points'),
+    points = models.FloatField(verbose_name=_('points'), default=100,
                                help_text=_('Points awarded for problem completion. '
                                            "Points are displayed with a 'p' suffix if partial."),
                                validators=[MinValueValidator(settings.DMOJ_PROBLEM_MIN_PROBLEM_POINTS)])
@@ -200,7 +150,7 @@ class Problem(models.Model):
     ac_rate = models.FloatField(verbose_name=_('solve rate'), default=0)
     is_full_markup = models.BooleanField(verbose_name=_('allow full markdown access'), default=False)
     submission_source_visibility_mode = models.CharField(verbose_name=_('submission source visibility'), max_length=1,
-                                                         default=SubmissionSourceAccess.FOLLOW,
+                                                         default=SubmissionSourceAccess.ONLY_OWN,
                                                          choices=SUBMISSION_SOURCE_ACCESS)
     testcase_visibility_mode = models.CharField(verbose_name=_('Testcase visibility'), max_length=1,
                                                 default=ProblemTestcaseAccess.AUTHOR_ONLY,
@@ -241,8 +191,8 @@ class Problem(models.Model):
                 return True
 
         return user.has_perm('judge.edit_own_problem') and \
-            (user.id in self.editor_ids or
-                self.is_organization_private and self.organizations.filter(admins=user).exists())
+            (user.profile.id in self.editor_ids or
+                self.is_organization_private and self.organizations.filter(admins=user.profile).exists())
 
     def is_testcase_accessible_by(self, user):
         if self.testcase_visibility_mode == ProblemTestcaseAccess.ALWAYS:
@@ -260,16 +210,7 @@ class Problem(models.Model):
         # Don't need to check for ProblemTestcaseAccess.AUTHOR_ONLY
         return False
 
-    def is_accessible_by(self, user, skip_contest_problem_check=False):
-        # If we don't want to check if the user is in a contest containing that problem.
-        if not skip_contest_problem_check and user.is_authenticated:
-            # If user is currently in a contest containing that problem.
-            current = user.current_contest_id
-            if current is not None:
-                from judge.models import ContestProblem
-                if ContestProblem.objects.filter(problem_id=self.id, contest__users__id=current).exists():
-                    return True
-
+    def is_accessible_by(self, user):
         # Problem is public.
         if self.is_public:
             # Problem is not private to an organization.
@@ -297,10 +238,6 @@ class Problem(models.Model):
         if self.is_editable_by(user) or user.id in self.editor_ids:
             return True
 
-        # If user is a tester.
-        if self.testers.filter(id=user.id).exists():
-            return True
-
         return False
 
     def is_subs_manageable_by(self, user):
@@ -322,6 +259,7 @@ class Problem(models.Model):
         #           - not is_organization_private or in organization or `judge.see_organization_problem`
         #           - author or curator or tester
         queryset = cls.objects.defer('description')
+        profile = user.profile
 
         if not (user.has_perm('judge.see_private_problem') or user.has_perm('judge.edit_all_problem')):
             q = Q(is_public=True)
@@ -329,16 +267,14 @@ class Problem(models.Model):
                 # Either not organization private or in the organization.
                 q &= (
                     Q(is_organization_private=False) |
-                    Q(is_organization_private=True, organizations__in=user.organizations.all())
+                    Q(is_organization_private=True, organizations__in=profile.organizations.all())
                 )
 
             if user.has_perm('judge.edit_own_problem'):
-                q |= Q(is_organization_private=True, organizations__in=user.admin_of.all())
+                q |= Q(is_organization_private=True, organizations__in=profile.admin_of.all())
 
             # Authors, curators, and testers should always have access, so OR at the very end.
-            q |= Q(authors=user)
-            q |= Q(curators=user)
-            q |= Q(testers=user)
+            q |= Q(authors=profile)
             queryset = queryset.filter(q)
 
         return queryset
@@ -374,12 +310,7 @@ class Problem(models.Model):
 
     @cached_property
     def editor_ids(self):
-        return self.author_ids.union(
-            Problem.curators.through.objects.filter(problem=self).values_list('profile_id', flat=True))
-
-    @cached_property
-    def tester_ids(self):
-        return Problem.testers.through.objects.filter(problem=self).values_list('profile_id', flat=True)
+        return self.author_ids
 
     @cached_property
     def usable_common_names(self):

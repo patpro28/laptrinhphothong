@@ -7,13 +7,18 @@ from django.forms import ModelForm
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.html import format_html
-from django.utils.translation import gettext, gettext_lazy as _, ngettext
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 from reversion.admin import VersionAdmin
 
-from judge.models import LanguageLimit, Problem, ProblemClarification, ProblemTranslation, Profile, Solution
-from judge.models.problem import ProblemClass, ProblemGroup, ProblemType
+from judge.models import (LanguageLimit, Problem, ProblemClarification,
+                          ProblemTranslation, Profile, Solution)
+from judge.models.problem import ProblemType
 from judge.utils.views import NoBatchDeleteMixin
-from judge.widgets import AdminMartorWidget, CheckboxSelectMultipleWithSelectAll
+from judge.widgets import (AdminMartorWidget,
+                           CheckboxSelectMultipleWithSelectAll)
+
 
 class ProblemForm(ModelForm):
     change_message = forms.CharField(max_length=256, label='Edit reason', required=False)
@@ -22,8 +27,6 @@ class ProblemForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProblemForm, self).__init__(*args, **kwargs)
         self.fields['authors'].widget.can_add_related = False
-        self.fields['curators'].widget.can_add_related = False
-        self.fields['testers'].widget.can_add_related = False
         self.fields['banned_users'].widget.can_add_related = False
         self.fields['change_message'].widget.attrs.update({
             'placeholder': gettext('Describe the changes you made (optional)'),
@@ -39,26 +42,13 @@ class ProblemCreatorListFilter(admin.SimpleListFilter):
     title = parameter_name = 'creator'
 
     def lookups(self, request, model_admin):
-        queryset = Profile.objects.exclude(authored_problems=None).values_list('username', flat=True)
+        queryset = Profile.objects.exclude(authored_problems=None).values_list('user__username', flat=True)
         return [(name, name) for name in queryset]
 
     def queryset(self, request, queryset):
         if self.value() is None:
             return queryset
         return queryset.filter(authors__username=self.value())
-
-
-class ProblemGroupFilter(admin.SimpleListFilter):
-    title = parameter_name = 'group'
-
-    def lookups(self, request, model_admin):
-        queryset = ProblemGroup.objects.values_list('name', 'full_name')
-        return [(name, fullname) for name, fullname in queryset]
-
-    def queryset(self, request, queryset):
-        if self.value() is None:
-            return queryset
-        return queryset.filter(group__name=self.value())
 
 
 class ProblemTypeFilter(admin.SimpleListFilter):
@@ -72,19 +62,6 @@ class ProblemTypeFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
         return queryset.filter(types__name=self.value())
-
-
-class ProblemClassFilter(admin.SimpleListFilter):
-    title = parameter_name = 'class'
-
-    def lookups(self, request, model_admin):
-        queryset = ProblemClass.objects.values_list('name', 'full_name')
-        return [(name, fullname) for name, fullname in queryset]
-
-    def queryset(self, request, queryset):
-        if self.value() is None:
-            return queryset
-        return queryset.filter(classes__name=self.value())
 
 
 class LanguageLimitInline(admin.TabularInline):
@@ -147,13 +124,13 @@ class ProblemAdmin(NoBatchDeleteMixin, VersionAdmin):
     fieldsets = (
         (None, {
             'fields': (
-                'code', 'name', 'is_public', 'is_manually_managed', 'date', 'authors', 'curators', 'testers',
+                'code', 'name', 'is_public', 'is_manually_managed', 'date', 'authors',
                 'is_organization_private', 'organizations', 'submission_source_visibility_mode', 'is_full_markup',
                 'description', 'license', 'testcase_visibility_mode',
             ),
         }),
         (_('Social Media'), {'classes': ('grp-collapse grp-open',), 'fields': ('og_image', 'summary')}),
-        (_('Taxonomy'), {'fields': ('classes', 'types', 'group')}),
+        (_('Taxonomy'), {'fields': ('types',)}),
         (_('Points'), {'fields': (('points', 'partial'), 'short_circuit')}),
         (_('Limits'), {'fields': ('time_limit', 'memory_limit')}),
         (_('Language'), {'fields': ('allowed_languages',)}),
@@ -162,23 +139,21 @@ class ProblemAdmin(NoBatchDeleteMixin, VersionAdmin):
     )
     autocomplete_fields = [
         'authors', 
-        'curators', 
-        'testers', 
+        # 'curators', 
+        # 'testers', 
         'organizations', 
         'banned_users', 
-        'classes', 
         'types', 
-        'group',
         'license',
     ]
     list_display = ['code', 'name', 'show_authors', 'points', 'is_public', 'show_public', ]
     ordering = ['code']
-    search_fields = ('code', 'name', 'authors__username', 'curators__username')
+    search_fields = ('code', 'name')
     inlines = [LanguageLimitInline, ProblemClarificationInline, ProblemSolutionInline, ProblemTranslationInline]
     list_max_show_all = 1000
     actions_on_top = True
     actions_on_bottom = True
-    list_filter = ('is_public', ProblemCreatorListFilter, ProblemClassFilter, ProblemGroupFilter, ProblemTypeFilter)
+    list_filter = ('is_public', ProblemCreatorListFilter, ProblemTypeFilter)
     form = ProblemForm
     date_hierarchy = 'date'
 

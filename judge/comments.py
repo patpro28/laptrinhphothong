@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.db.models import Count, IntegerField
+from django.db.models import Count, IntegerField, FilteredRelation, Q, F
 from django.db.models.expressions import Value
 from django.db.models.functions import Coalesce
 from django.forms import ModelForm
@@ -19,7 +19,6 @@ from reversion.models import Revision, Version
 
 from judge.dblock import LockModel
 from judge.models import Comment, CommentLock, CommentVote
-from judge.utils.raw_sql import RawSQLColumn, unique_together_left_join
 from judge.widgets import HeavyPreviewPageDownWidget
 
 
@@ -112,9 +111,10 @@ class CommentedDetailView(TemplateResponseMixin, SingleObjectMixin, View):
         queryset = queryset.select_related('author').defer('author__about').annotate(revisions=Count('versions'))
 
         if self.request.user.is_authenticated:
-            queryset = queryset.annotate(vote_score=Coalesce(RawSQLColumn(CommentVote, 'score'), Value(0), output_field=IntegerField()))
             profile = self.request.user
-            unique_together_left_join(queryset, CommentVote, 'comment', 'voter', profile.id)
+            queryset = queryset.annotate(
+                my_vote=FilteredRelation('votes', condition=Q(votes__voter_id=profile.id)),
+            ).annotate(vote_score=Coalesce(F('my_vote__score'), Value(0)))
             context['is_new_user'] = not self.request.user.is_staff and not profile.has_any_solves
         context['comment_list'] = queryset
         context['vote_hide_threshold'] = settings.DMOJ_COMMENT_VOTE_HIDE_THRESHOLD

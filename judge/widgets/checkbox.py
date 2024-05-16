@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 
 
 class CheckboxSelectMultipleWithSelectAll(forms.CheckboxSelectMultiple):
+    template_name = 'forms/widgets/checkbox_select.html'
     def render(self, name, value, attrs=None, renderer=None):
         if 'id' not in attrs:
             raise FieldError('id required')

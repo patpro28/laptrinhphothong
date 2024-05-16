@@ -1,0 +1,54 @@
+[
+  {
+    "fields": {
+      "user": 1,
+      "problem": 1,
+      "date": "2023-12-02T08:46:54.007Z",
+      "time": 0.1,
+      "memory": 25000,
+      "points": 100,
+      "language": 18,
+      "status": "D",
+      "result": "AC",
+      "current_testcase": 10,
+      "case_points": 10,
+      "case_total": 10
+    },
+    "model": "judge.submission",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "user": 1,
+      "problem": 1,
+      "date": "2023-12-02T08:46:54.007Z",
+      "time": 0.1,
+      "memory": 25000,
+      "points": 80,
+      "language": 18,
+      "status": "D",
+      "result": "WA",
+      "current_testcase": 10,
+      "case_points": 8,
+      "case_total": 10
+    },
+    "model": "judge.submission",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "user": 1,
+      "problem": 1,
+      "date": "2023-12-02T08:46:54.007Z",
+      "time": 12,
+      "memory": 25000,
+      "points": 0,
+      "language": 18,
+      "status": "D",
+      "result": "TLE",
+      "current_testcase": 10
+    },
+    "model": "judge.submission",
+    "pk": 3
+  }
+]

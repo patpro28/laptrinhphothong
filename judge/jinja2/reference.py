@@ -8,7 +8,7 @@ from django.utils.safestring import mark_safe
 from lxml.html import Element
 
 from judge import lxml_tree
-from judge.models import Contest, Problem, Profile
+from judge.models import Problem, Profile
 from judge.ratings import rating_class, rating_progress
 
 from . import registry
@@ -133,8 +133,6 @@ def reference(text):
 @registry.filter
 def item_title(item):
     if isinstance(item, Problem):
-        return item.name
-    elif isinstance(item, Contest):
         return item.name
     return '<Unknown>'
 

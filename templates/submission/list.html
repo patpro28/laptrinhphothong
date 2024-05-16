@@ -1,9 +1,5 @@
 {% extends "common-content.html" %}
 {% block js_media %}
-<script src="{{ static('semantic/components/form.min.js') }}"></script>
-<script src="{{ static('semantic/components/dropdown.min.js') }}"></script>
-<script src="{{ static('semantic/components/transition.min.js') }}"></script>
-<script src="{{ static('semantic/components/search.min.js') }}"></script>
     <script type="text/javascript">
         {% if dynamic_update and EVENT_LAST_MSG %}
             {% if dynamic_contest_id %}
@@ -31,7 +27,6 @@
     </script>
 
     {% compress js %}
-        <script type="text/javascript" src="{{ static('event.js') }}"></script>
         {% if request.user.is_authenticated and perms.judge.rejudge_submission %}
             <script type="text/javascript">
                 window.rejudge_submission = function (id, e) {
@@ -71,7 +66,7 @@
                 matcher: idAndTextMatcher,
             }).css({'visibility': 'visible'});
 
-            $('#language').select2({
+            $('#language_code').select2({
                 multiple: 1,
                 placeholder: '{{ _('Filter by language...') }}',
                 matcher: idAndTextMatcher,
@@ -127,9 +122,9 @@
             var _collect = function (e) {
                 return e.value;
             };
-            var language_filter = $('input[name=language]').val().split(',');
+            var language_filter = $('input[name=language_code]').val().split(',');
             var status_filter = $('input[name=status]').val().split(',');
-            if ($('input[name=language]').val() === "")
+            if ($('input[name=language_code]').val() === "")
                 language_filter = []
             if ($('input[name=status]').val() === "")
                 status_filter = []
@@ -205,38 +200,9 @@
             });
 
             var $body = $(document.body);
-            event_dispatcher.on('submissions', function (message) {
-                    if (dynamic_user_id && message.user != dynamic_user_id ||
-                        dynamic_problem_id && message.problem != dynamic_problem_id ||
-                        dynamic_contest_id && message.contest != dynamic_contest_id)
-                        return;
-                    if (message.type == 'update-submission') {
-                        if (message.state == 'test-case' && $body.hasClass('window-hidden'))
-                            return;
-                        update_submission(message);
-                    } else if (message.type == 'done-submission') {
-                        update_submission(message, true);
-
-                        if (!statistics.length) return;
-                        if ($('body').hasClass('window-hidden'))
-                            return stats_outdated = true;
-                        update_stats();
-                    }
-                }
-            );
-            event_dispatcher.onwsclose = function (event) {
-                if (event.code == 1001) {
-                    console.log('Navigated away');
-                    return;
-                }
-                console.log('You probably should refresh?');
-                $('.ws-closed').show().find('a').click(function () {
-                    window.location.reload();
-                });
-            };
         }
     </script>
-    {% if dynamic_update and EVENT_LAST_MSG %}
+    {% if dynamic_update %}
         <script type="text/javascript">
             $(function () {
                 load_dynamic_update();
@@ -252,10 +218,6 @@
 {% endblock %}
 
 {% block media %}
-<link rel="stylesheet" href="{{ static('semantic/components/form.min.css') }}">
-<link rel="stylesheet" href="{{ static('semantic/components/dropdown.min.css') }}">
-<link rel="stylesheet" href="{{ static('semantic/components/search.min.css') }}">
-<link rel="stylesheet" href="{{ static('semantic/components/transition.min.css') }}">
     {% if perms.judge.change_submission and perms.judge.rejudge_submission %}
         <style>
             td.sub-prop, col.sub-prop {
@@ -298,35 +260,30 @@
                         <i class="search icon"></i>
                     </div>
                 </div>
-                <form name="form" class="p-2 ui form" action="" method="get">
-                    <div class="field">
-                        <label for="status">{{ _('Status') }}</label>
-                        <div class="ui fluid multiple search normal selection dropdown">
-                            <input type="hidden" name="status" {% if selected_statuses %}value="{{ selected_statuses|join(',') }}"{% endif %}>
-                            <div class="default text">{{ _('Filter by status...')}}</div>
-                            <div class="menu">
-                                {% for id, name in all_statuses %}
-                                    <div class="item" data-value="{{ id }}">{{ name }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label for="language">{{ _('Language') }}</label>
-                        <div class="ui fluid multiple search normal selection dropdown">
-                            <input type="hidden" name="language" {% if selected_languages %}value="{{ selected_languages|join(',') }}"{% endif %}>
-                            <div class="default text">{{ _('Filter by language...') }}</div>
-                            <div class="menu">
-                                {% for code, name in all_languages %}
-                                    <div class="item" data-value="{{ code }}">{{ name }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                <form name="form" class="p-2" action="" method="get">
+                    <label class="block mb-2" for="status">
+                        <span class="font-bold text-gray-700 dark:text-white">
+                            {{ _('Status') }}
+                        </span>
+                        <select class="w-full" id="status" name="status" multiple>
+                            <option value=""></option>
+                            {% for id, name in all_statuses %}
+                                <option value="{{ id }}" {% if selected_statuses and id in selected_statuses %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="block mb-2" for="language_code">
+                        <span class="font-bold text-gray-700 dark:text-white">
+                            {{ _('Language') }}
+                        </span>
+                        <select class="w-full" id="language_code" name="language_code" multiple>
+                            <option value=""></option>
+                            {% for code, name in all_languages %}
+                                <option value="{{ code }}" {% if selected_languages and code in selected_languages %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
                     <button class="w-full p-2 font-bold text-white bg-blue-500 rounded-md">{{ _('Go') }}</button>
-                    <script>
-                        $('.selection.dropdown').dropdown();
-                    </script>
                 </form>
             </div>
 

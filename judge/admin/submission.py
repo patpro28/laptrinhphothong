@@ -6,15 +6,17 @@ from django.contrib import admin, messages
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.urls import path
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import path
 from django.utils.html import format_html
-from django.utils.translation import gettext, gettext_lazy as _, pgettext, ngettext
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext, pgettext
 
 from django_ace import AceWidget
-from judge.models import ContestParticipation, ContestProblem, ContestSubmission, Profile, Submission, \
-    SubmissionSource, SubmissionTestCase
+from judge.models import (Profile, Submission, SubmissionSource,
+                          SubmissionTestCase)
 from judge.utils.raw_sql import use_straight_join
 
 
@@ -62,39 +64,6 @@ class SubmissionTestCaseInline(admin.TabularInline):
     max_num = 0
 
 
-class ContestSubmissionInline(admin.StackedInline):
-    fields = ('problem', 'participation', 'points')
-    model = ContestSubmission
-
-    def get_formset(self, request, obj=None, **kwargs):
-        kwargs['formfield_callback'] = partial(self.formfield_for_dbfield, request=request, obj=obj)
-        return super(ContestSubmissionInline, self).get_formset(request, obj, **kwargs)
-
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        submission = kwargs.pop('obj', None)
-        label = None
-        if submission:
-            if db_field.name == 'participation':
-                kwargs['queryset'] = ContestParticipation.objects.filter(user=submission.user,
-                                                                         contest__problems=submission.problem) \
-                    .only('id', 'contest__name')
-
-                def label(obj):
-                    return obj.contest.name
-            elif db_field.name == 'problem':
-                kwargs['queryset'] = ContestProblem.objects.filter(problem=submission.problem) \
-                    .only('id', 'problem__name', 'contest__name')
-
-                def label(obj):
-                    return pgettext('contest problem', '%(problem)s in %(contest)s') % {
-                        'problem': obj.problem.name, 'contest': obj.contest.name,
-                    }
-        field = super(ContestSubmissionInline, self).formfield_for_dbfield(db_field, **kwargs)
-        if label is not None:
-            field.label_from_instance = label
-        return field
-
-
 class SubmissionSourceInline(admin.StackedInline):
     fields = ('source',)
     model = SubmissionSource
@@ -118,7 +87,7 @@ class SubmissionAdmin(admin.ModelAdmin):
     search_fields = ('problem__code', 'problem__name', 'user__username')
     actions_on_top = True
     actions_on_bottom = True
-    inlines = [SubmissionSourceInline, SubmissionTestCaseInline, ContestSubmissionInline]
+    inlines = [SubmissionSourceInline, SubmissionTestCaseInline]
 
     def get_readonly_fields(self, request, obj=None):
         fields = self.readonly_fields

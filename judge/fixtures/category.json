@@ -1,0 +1,90 @@
+[
+  {
+    "fields": {
+      "name": "N01",
+      "full_name": "Nhập môn: 01 - Biến, hằng và phép toán"
+    },
+    "model": "judge.problemtype",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "N02",
+      "full_name": "Nhập môn: 02 - Cấu trúc rẽ nhánh"
+    },
+    "model": "judge.problemtype",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "name": "N03",
+      "full_name": "Nhập môn: 03 - Cấu trúc lặp"
+    },
+    "model": "judge.problemtype",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "name": "N04",
+      "full_name": "Nhập môn: 04 - Mảng một chiều"
+    },
+    "model": "judge.problemtype",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "name": "N05",
+      "full_name": "Nhập môn: 05 - Mảng hai chiều"
+    },
+    "model": "judge.problemtype",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "name": "N06",
+      "full_name": "Nhập môn: 06 - Xâu ký tự"
+    },
+    "model": "judge.problemtype",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "name": "N07",
+      "full_name": "Nhập môn: 07 - Xử lý file văn bản"
+    },
+    "model": "judge.problemtype",
+    "pk": 7
+  },
+  {
+    "fields": {
+      "name": "N08",
+      "full_name": "Nhập môn: 08 - Hàm (function)"
+    },
+    "model": "judge.problemtype",
+    "pk": 8
+  },
+  {
+    "fields": {
+      "name": "N09",
+      "full_name": "Nhập môn: 09 - Cấu trúc bản ghi struct"
+    },
+    "model": "judge.problemtype",
+    "pk": 9
+  },
+  {
+    "fields": {
+      "name": "N10",
+      "full_name": "Nhập môn: 10 - Số học cơ bản"
+    },
+    "model": "judge.problemtype",
+    "pk": 10
+  },
+  {
+    "fields": {
+      "name": "N11",
+      "full_name": "Nhập môn: 11 - Đệ quy"
+    },
+    "model": "judge.problemtype",
+    "pk": 11
+  }
+]

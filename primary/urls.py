@@ -10,21 +10,20 @@ from martor.views import markdown_search_user
 
 from judge.feed import (AtomBlogFeed, AtomCommentFeed, AtomProblemFeed,
                         BlogFeed, CommentFeed, ProblemFeed)
-from judge.sitemap import (BlogPostSitemap, ContestSitemap, HomePageSitemap,
+from judge.sitemap import (BlogPostSitemap, HomePageSitemap,
                            OrganizationSitemap, ProblemSitemap,
                            SolutionSitemap, UrlSitemap, UserSitemap)
-from judge.views import (TitledTemplateView, about, api, blog, comment,
-                         contests, language, license, mailgun, organization,
-                         preview, problem, problem_manage, ranked_submission,
-                         register, stats, status, submission, tasks, ticket,
-                         user, widgets)
+from judge.views import (TitledTemplateView, about, blog, comment, language,
+                         license, mailgun, organization, preview, problem,
+                         problem_manage, register, stats, status, submission,
+                         tasks, ticket, user, widgets)
 from judge.views.problem_data import (ProblemDataView, ProblemSubmissionDiff,
                                       problem_data_file, problem_init_view)
 from judge.views.register import RegistrationView
 from judge.views.select2 import (  # , UserSearchSematicView
-    AssigneeSelect2View, CommentSelect2View, ContestSelect2View,
-    ContestUserSearchSelect2View, OrganizationSelect2View, ProblemSelect2View,
-    TicketUserSelect2View, UserSearchSelect2View, UserSelect2View)
+    AssigneeSelect2View, CommentSelect2View, OrganizationSelect2View,
+    ProblemSelect2View, TicketUserSelect2View, UserSearchSelect2View,
+    UserSelect2View)
 from judge.views.widgets import martor_image_uploader
 
 admin.autodiscover()
@@ -115,10 +114,10 @@ urlpatterns = [
 
     path('problems/', problem.ProblemList.as_view(), name='problem_list'),
     path('problems/random/', problem.RandomProblem.as_view(), name='problem_random'),
-	path('problems/new/', problem.ProblemNew.as_view(), name='problem_new'),
+	# path('problems/new/', problem.ProblemNew.as_view(), name='problem_new'),
 
     path('problem/<slug:problem>', include([
-        path('/update', problem.ProblemEdit.as_view(), name='problem_edit'),
+        # path('/update', problem.ProblemEdit.as_view(), name='problem_edit'),
         path('', problem.ProblemDetail.as_view(), name='problem_detail'),
         path('/ps', problem.PublicSolutionCreateView.as_view(), name='create_public_solution'),
         path('/listps', problem.PublicSolutionListView.as_view(), name='public_solution'),
@@ -131,7 +130,7 @@ urlpatterns = [
         path('/submit', problem.ProblemSubmit.as_view(), name='problem_submit'),
         path('/resubmit/<slug:submission>', problem.ProblemSubmit.as_view(), name='problem_submit'),
 
-        path('/rank/', paged_list_view(ranked_submission.RankedSubmissions, 'ranked_submissions')),
+        path('/rank/', paged_list_view(submission.RankedSubmissions, 'ranked_submissions')),
         path('/submissions/', paged_list_view(submission.ProblemSubmissions, 'chronological_submissions')),
         path('/submissions/<str:user>/', paged_list_view(submission.UserProblemSubmissions, 'user_submissions')),
 
@@ -207,49 +206,6 @@ urlpatterns = [
         path('render', comment.CommentContent.as_view(), name='comment_content'),
     ])),
 
-    path('contests/', paged_list_view(contests.ContestList, 'contest_list')),
-    # path('contests/create', contests.ContestAdd.as_view(), name='contest_add'),
-    path('contests/<slug:year>/<slug:month>/', contests.ContestCalendar.as_view(), name='contest_calendar'),
-    path('contests/tag/<slug:name>', include([
-        path('', contests.ContestTagDetail.as_view(), name='contest_tag'),
-        path('/ajax', contests.ContestTagDetailAjax.as_view(), name='contest_tag_ajax'),
-    ])),
-
-    path('contest/<slug:contest>', include([
-        path('', contests.ContestDetail.as_view(), name='contest_view'),
-        path('/csv', contests.exportcsv, name="export_csv"),
-        path('/moss', contests.ContestMossView.as_view(), name='contest_moss'),
-        path('/moss/delete', contests.ContestMossDelete.as_view(), name='contest_moss_delete'),
-        path('/clone', contests.ContestClone.as_view(), name='contest_clone'),
-        path('/ranking/', contests.ContestRanking.as_view(), name='contest_ranking'),
-        path('/ranking/ajax', contests.contest_ranking_ajax, name='contest_ranking_ajax'),
-        path('/join', contests.ContestJoin.as_view(), name='contest_join'),
-        path('/leave', contests.ContestLeave.as_view(), name='contest_leave'),
-        path('/stats', contests.ContestStats.as_view(), name='contest_stats'),
-        path('/raw', contests.ContestRawView.as_view(), name="contest_raw"),
-
-        path('/rank/<slug:problem>/',
-            paged_list_view(ranked_submission.ContestRankedSubmission, 'contest_ranked_submissions')),
-
-        path('/submissions/<str:user>/',
-            paged_list_view(submission.UserAllContestSubmissions, 'contest_all_user_submissions')),
-        path('/submissions/<str:user>/<slug:problem>/',
-            paged_list_view(submission.UserContestSubmissions, 'contest_user_submissions')),
-
-        path('/participations', contests.ContestParticipationList.as_view(), name='contest_participation_own'),
-        path('/participations/<str:user>',
-            contests.ContestParticipationList.as_view(), name='contest_participation'),
-        path('/participation/disqualify', contests.ContestParticipationDisqualify.as_view(),
-            name='contest_participation_disqualify'),
-
-        path('/', lambda _, contest: HttpResponsePermanentRedirect(reverse('contest_view', args=[contest]))),
-        path('/pdf', contests.ContestPdfView.as_view(), name="contest_pdf"),
-    ])),
-
-    path('scontest/<int:pk>', include([
-        path('/pdf', contests.SampleContestPDF.as_view(), name='sample_contest_pdf'),
-    ])),
-
     path('organizations/', organization.OrganizationList.as_view(), name='organization_list'),
     path('organization/<int:pk>-<slug:slug>', include([
         path('', organization.OrganizationHome.as_view(), name='organization_home'),
@@ -277,32 +233,6 @@ urlpatterns = [
     path('runtimes/', language.LanguageList.as_view(), name='runtime_list'),
     path('runtimes/matrix/', status.version_matrix, name='version_matrix'),
     path('status/', status.status_all, name='status_all'),
-
-    path('api/', include([
-        path('contest/list', api.api_v1_contest_list),
-        path('contest/info/(', api.api_v1_contest_detail),
-        path('problem/list', api.api_v1_problem_list),
-        path('problem/info/(', api.api_v1_problem_info),
-        path('user/list', api.api_v1_user_list),
-        path('user/info/(', api.api_v1_user_info),
-        path('user/submissions/(', api.api_v1_user_submissions),
-        path('user/ratings/(', api.api_v1_user_ratings),
-        path('v2/', include([
-            path('contests', api.api_v2.APIContestList.as_view()),
-            path('contest/<slug:contest>', api.api_v2.APIContestDetail.as_view()),
-            path('problems', api.api_v2.APIProblemList.as_view()),
-            path('problem/<slug:problem>', api.api_v2.APIProblemDetail.as_view()),
-            path('users', api.api_v2.APIUserList.as_view()),
-            path('user/<str:user>', api.api_v2.APIUserDetail.as_view()),
-            path('submissions', api.api_v2.APISubmissionList.as_view()),
-            path('submission/<slug:submission>', api.api_v2.APISubmissionDetail.as_view()),
-            path('organizations', api.api_v2.APIOrganizationList.as_view()),
-            path('participations', api.api_v2.APIContestParticipationList.as_view()),
-            path('languages', api.api_v2.APILanguageList.as_view()),
-            path('judges', api.api_v2.APIJudgeList.as_view()),
-        ])),
-    ])),
-
     path('blog/', paged_list_view(blog.PostList, 'blog_post_list')),
     path('post/<int:id>-<slug:slug>', blog.PostView.as_view(), name='blog_post'),
 
@@ -321,8 +251,6 @@ urlpatterns = [
         # path('user_search2.json', UserSearchSematicView.as_view(), name='user_search_semantic_ajax'),
         path('select2/', include([
             path('user_search', UserSearchSelect2View.as_view(), name='user_search_select2_ajax'),
-            path('contest_users/<slug:contest>', ContestUserSearchSelect2View.as_view(),
-                name='contest_user_search_select2_ajax'),
             path('ticket_user', TicketUserSelect2View.as_view(), name='ticket_user_select2_ajax'),
             path('ticket_assignee', AssigneeSelect2View.as_view(), name='ticket_assignee_select2_ajax'),
         ])),
@@ -383,7 +311,6 @@ urlpatterns = [
         'problem': ProblemSitemap,
         'user': UserSitemap,
         'home': HomePageSitemap,
-        'contest': ContestSitemap,
         'organization': OrganizationSitemap,
         'blog': BlogPostSitemap,
         'solutions': SolutionSitemap,
@@ -396,7 +323,6 @@ urlpatterns = [
         path('profile/', UserSelect2View.as_view(), name='profile_select2'),
         path('organization/', OrganizationSelect2View.as_view(), name='organization_select2'),
         path('problem/', ProblemSelect2View.as_view(), name='problem_select2'),
-        path('contest/', ContestSelect2View.as_view(), name='contest_select2'),
         path('comment/', CommentSelect2View.as_view(), name='comment_select2'),
     ])),
 

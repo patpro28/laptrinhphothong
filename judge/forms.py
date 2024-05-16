@@ -18,9 +18,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from django_ace import AceWidget
-from judge.models import (Contest, Language, Organization, Problem, Profile,
-                          Submission)
-from judge.models.contest import SampleContest, SampleContestProblem
+from judge.models import Language, Organization, Problem, Profile, Submission
 from judge.models.problem import LanguageLimit, Solution
 from judge.models.problem_data import PublicSolution
 from judge.utils.subscription import newsletter_id
@@ -74,13 +72,9 @@ class CreateManyUserForm(Form):
                                             % {'ext': ext})
 
 class ProfileForm(ModelForm):
-    if newsletter_id is not None:
-        newsletter = forms.BooleanField(label=_('Subscribe to contest updates'), initial=False, required=False)
-    test_site = forms.BooleanField(label=_('Enable experimental features'), initial=False, required=False)
-
     class Meta:
         model = Profile
-        fields = ['about', 'timezone', 'language', 'ace_theme',]
+        fields = ['about', 'timezone', 'language', 'ace_theme']
         widgets = {
             'timezone': Select2Widget(attrs={'style': 'width:100%'}),
             'language': Select2Widget(attrs={'style': 'width:100%'}),
@@ -253,123 +247,8 @@ class TOTPEnableForm(TOTPForm):
             raise ValidationError(totp_validate['err'])
 
 
-class TwoFactorLoginForm(TOTPForm):
-    webauthn_response = forms.CharField(widget=forms.HiddenInput(), required=False)
-
-    def __init__(self, *args, **kwargs):
-        self.webauthn_challenge = kwargs.pop('webauthn_challenge')
-        self.webauthn_origin = kwargs.pop('webauthn_origin')
-        super().__init__(*args, **kwargs)
-
-    def clean(self):
-        totp_or_scratch_code = self.cleaned_data.get('totp_or_scratch_code')
-        if self.profile.is_webauthn_enabled and self.cleaned_data.get('webauthn_response'):
-            if len(self.cleaned_data['webauthn_response']) > 65536:
-                raise ValidationError(_('Invalid WebAuthn response.'))
-
-            if not self.webauthn_challenge:
-                raise ValidationError(_('No WebAuthn challenge issued.'))
-
-            response = json.loads(self.cleaned_data['webauthn_response'])
-            try:
-                credential = self.profile.webauthn_credentials.get(cred_id=response.get('id', ''))
-            except WebAuthnCredential.DoesNotExist:
-                raise ValidationError(_('Invalid WebAuthn credential ID.'))
-
-            user = credential.webauthn_user
-            # Work around a useless check in the webauthn package.
-            user.credential_id = credential.cred_id
-            assertion = webauthn.WebAuthnAssertionResponse(
-                webauthn_user=user,
-                assertion_response=response.get('response'),
-                challenge=self.webauthn_challenge,
-                origin=self.webauthn_origin,
-                uv_required=False,
-            )
-
-            try:
-                sign_count = assertion.verify()
-            except Exception as e:
-                raise ValidationError(str(e))
-
-            credential.counter = sign_count
-            credential.save(update_fields=['counter'])
-        elif totp_or_scratch_code:
-            if self.profile.is_totp_enabled and self.profile.check_totp_code(totp_or_scratch_code):
-                return
-            elif self.profile.scratch_codes and totp_or_scratch_code in json.loads(self.profile.scratch_codes):
-                scratch_codes = json.loads(self.profile.scratch_codes)
-                scratch_codes.remove(totp_or_scratch_code)
-                self.profile.scratch_codes = json.dumps(scratch_codes)
-                self.profile.save(update_fields=['scratch_codes'])
-                return
-            elif self.profile.is_totp_enabled:
-                raise ValidationError(_('Invalid two-factor authentication token or scratch code.'))
-            else:
-                raise ValidationError(_('Invalid scratch code.'))
-        else:
-            raise ValidationError(_('Must specify either totp_token or webauthn_response.'))
-
-
 class ProblemCloneForm(Form):
     code = CharField(max_length=20, validators=[RegexValidator('^[a-z0-9]+$', _('Problem code must be ^[a-z0-9]+$'))])
-
-    def clean_code(self):
-        code = self.cleaned_data['code']
-        if Problem.objects.filter(code=code).exists():
-            raise ValidationError(_('Problem with code already exists.'))
-        return code
-
-
-class ContestCloneForm(Form):
-    key = CharField(max_length=20, validators=[RegexValidator('^[a-z0-9]+$', _('Contest id must be ^[a-z0-9]+$'))])
-
-    def clean_key(self):
-        key = self.cleaned_data['key']
-        if Contest.objects.filter(key=key).exists():
-            raise ValidationError(_('Contest with key already exists.'))
-        return key
-
-
-class ProblemUpdateForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(ProblemUpdateForm, self).__init__(*args, **kwargs)
-        self.fields['authors'].widget.can_add_related = False
-        self.fields['curators'].widget.can_add_related = False
-        self.fields['testers'].widget.can_add_related = False
-        self.fields['banned_users'].widget.can_add_related = False
-        # self.fields['change_message'].widget.attrs.update({
-        #     'placeholder': gettext('Describe the changes you made (optional)'),
-        # })
-
-    class Meta:
-        model = Problem
-        fields = ['code', 'name', 'is_public', 'is_manually_managed', 'authors', 'curators', 'testers', 
-                'banned_users', 'is_organization_private', 'organizations', 'testcase_visibility_mode',
-                'submission_source_visibility_mode', 'is_full_markup', 'description', 'license', 'og_image', 'summary',
-                'types', 'group', 'classes', 
-                'time_limit', 'memory_limit', 'points', 'partial', 'allowed_languages']
-        widgets = {
-            'code': forms.TextInput(attrs={'placeholder': _('Problem code')}),
-            'name': forms.TextInput(attrs={'placeholder': _('Problem name')}),
-            'authors': HeavySelect2MultipleWidget(data_view='profile_select2'),
-            'curators': HeavySelect2MultipleWidget(data_view='profile_select2'),
-            'testers': HeavySelect2MultipleWidget(data_view='profile_select2'),
-            'banned_users': HeavySelect2MultipleWidget(data_view='profile_select2'),
-            'organizations': SemanticSelectMultiple,
-            'types': SemanticSelectMultiple,
-            'group': SemanticSelect,
-            'classes': SemanticSelect,
-            'submission_source_visibility_mode': SemanticSelect,
-            'testcase_visibility_mode': SemanticSelect,
-            # 'summary': MartorWidget(attrs={'data-markdownfy-url': reverse_lazy('problem_preview')}),
-            'license': SemanticSelect,
-            'description': MartorWidget(attrs={'data-markdownfy-url': reverse_lazy('problem_preview')}),
-            'allowed_languages': SemanticCheckboxSelectMultiple
-        }
-
-
-class ProblemCreateForm(ProblemUpdateForm):
 
     def clean_code(self):
         code = self.cleaned_data['code']
@@ -423,36 +302,6 @@ SolutionInlineFormset = inlineformset_factory(
     max_num=1
 )
 
-
-class SampleProblemForm(ModelForm):
-    class Meta:
-        model = SampleContestProblem
-        fields = '__all__'
-
-
-from .admin.contest import ProblemInlineFormset
-
-SampleProblemInlineFormset = inlineformset_factory(
-    SampleContest,
-    SampleContestProblem,
-    form=SampleProblemForm,
-    formset=ProblemInlineFormset,
-    extra=0,
-    can_delete=True,
-)
-
-
-class SampleContestForm(ModelForm):
-    class Meta:
-        model = SampleContest
-        fields = '__all__'
-
-    def clean_key(self):
-        key = self.cleaned_data['key']
-        qs = SampleContest.objects.filter(key=key)
-        if qs.count() > 0:
-            raise forms.ValidationError(_('Sample contest with key already exists.'))
-        
 
 class CreatePublicSolutionForm(ModelForm):
     class Meta:

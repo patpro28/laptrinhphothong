@@ -1,4 +1,4 @@
-<div class="ui threaded comments !max-w-none">
+<div class="!max-w-none">
     <div class="flex items-center w-full py-2 text-3xl font-bold border-b border-slate-600">
         <i class="comments icon"></i>
         {{ _('Comments') }}
@@ -11,34 +11,34 @@
                 data-max-revision="{{ node.revisions - 1 }}"
                 data-revision-ajax="{{ url('comment_revision_ajax', node.id) }}" class="comment {% if node.score <= vote_hide_threshold %} bad-comment{% endif %}">
                 {% with author=node.author %}
-                <a href="{{ url('user_page', author.username) }}" class="avatar">
+                <a href="{{ url('user_page', author.username) }}" class="block float-left w-10 h-auto mt-1 ml-4 mr-10">
                     <img src="{{ gravatar(author, 135) }}">
                 </a>
                 {% endwith %}
-                <div class="content">
-                    {{ link_user(node.author) }}
-                    <div class="metadata">
-                        <div class="date">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-4 metadata">
+                        {{ link_user(node.author) }}
+                        <div class="text-sm date text-slate-400">
                             {{ relative_time(node.time, abs=_('commented on {time}'), rel=_('commented {time}')) }}
                         </div>
                         <div class="rating">
                             {% if logged_in %}
                             <a href="javascript:comment_upvote({{ node.id }})" class="{% if node.vote_score == 1 %}text-green-50 {% else %} text-green-500 {% endif %}">
-                                <i class="upvote-link fa-solid fa-play -rotate-90 "></i>
+                                <i class="-rotate-90 upvote-link fa-solid fa-play "></i>
                             </a>
                             {% else %}
                             <a href="javascript:alert('{{ _('Please login to vote')|escapejs }}')" title="{{ _('Please login to vote') }}" class="text-green-500">
-                                <i class="upvote-link fa-solid fa-play -rotate-90"></i>
+                                <i class="-rotate-90 upvote-link fa-solid fa-play"></i>
                             </a>
                             {% endif %}
                             <span class="comment-score">{{ node.score }}</span>
                             {% if logged_in %}
                             <a href="javascript:comment_downvote({{ node.id }})" class="{% if node.vote_score == -1 %} text-red-50 {% else %} text-red-500 {% endif %}">
-                                <i class="downvote-link fa-solid fa-play rotate-90"></i>
+                                <i class="rotate-90 downvote-link fa-solid fa-play"></i>
                             </a>
                             {% else %}
                             <a href="javascript:alert('{{ _('Please login to vote')|escapejs }}')" title="{{ _('Please login to vote') }}" class="text-red-500">
-                                <i class="downvote-link fa-solid fa-play rotate-90"></i>
+                                <i class="rotate-90 downvote-link fa-solid fa-play"></i>
                             </a>
                             {% endif %}
                         </div>
@@ -64,7 +64,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="text">
+                    <div class="mt-1 mb-2 text">
                         <div class="comment-body" {% if node.score <= vote_hide_threshold %} style="display:none"{% endif %}>
                             {{ node.body|markdown('comment', True)|reference|str|safe }}
                         </div>
@@ -79,7 +79,7 @@
                             </div>
                         {% endif %}
                     </div>
-                    <div class="actions">
+                    <div class="flex gap-2.5 text-sm actions">
                         <a href="#comment-{{ node.id }}" title="{{ _('Link') }}" class="comment-link">
                             <i class="fa-solid fa-link"></i>
                         </a>

@@ -36,7 +36,7 @@
                 var reply_id = 'reply-' + parent;
                 if ($comment_reply.find('#' + reply_id).length == 0) {
                     var $reply_form = $('#new-comment').clone(true).prop('id', reply_id);
-                    $header_reply.find('.right.menu').prepend('<a class="icon item close"><i class="times icon"></i></a>');
+                    $header_reply.find('.right.menu').prepend('<i class="cursor-pointer fa-solid fa-times close"></i>');
                     $reply_form.find('input#id_parent').val(parent);
                     $reply_form.find('button#submit>.content').html("{{ _('Add new reply')}}")
                     $reply_form.appendTo($comment_reply);

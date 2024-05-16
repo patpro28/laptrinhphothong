@@ -9,7 +9,7 @@ from reversion.admin import VersionAdmin
 
 from judge.dblock import LockModel
 from judge.models import NavigationBar, Log
-from judge.models.profile import Profile
+from judge.models.profile import User
 from judge.widgets import AdminHeavySelect2MultipleWidget, AdminHeavySelect2Widget, AdminMartorWidget
 
 
@@ -133,11 +133,11 @@ class UserListFilter(admin.SimpleListFilter):
     parameter_name = 'user'
 
     def lookups(self, request, model_admin):
-        return Profile.objects.filter(is_staff=True).values_list('id', 'username')
+        return User.objects.filter(is_staff=True).values_list('id', 'username')
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(user_id=self.value(), is_staff=True)
+            return queryset.filter(user_id=self.value())
         return queryset
 
 
