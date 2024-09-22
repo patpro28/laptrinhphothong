@@ -183,35 +183,35 @@ class Submission(models.Model):
             return True
 
         # If user is an author or curator of the contest the submission was made in
-        if self.contest_object is not None and user.id in self.contest_object.editor_ids:
-            return True
+        # if self.contest_object is not None and user.id in self.contest_object.editor_ids:
+        #     return True
 
         return False
 
-    def update_contest(self):
-        try:
-            contest = self.contest
-        except AttributeError:
-            return
+    # def update_contest(self):
+    #     try:
+    #         contest = self.contest
+    #     except AttributeError:
+    #         return
 
-        contest_problem = contest.problem
-        contest.points = round(self.case_points / self.case_total * contest_problem.points
-                               if self.case_total > 0 else 0, 3)
-        if not contest_problem.partial and contest.points != contest_problem.points:
-            contest.points = 0
-        contest.save()
-        contest.participation.recompute_results()
+    #     contest_problem = contest.problem
+    #     contest.points = round(self.case_points / self.case_total * contest_problem.points
+    #                            if self.case_total > 0 else 0, 3)
+    #     if not contest_problem.partial and contest.points != contest_problem.points:
+    #         contest.points = 0
+    #     contest.save()
+    #     contest.participation.recompute_results()
 
-    update_contest.alters_data = True
+    # update_contest.alters_data = True
 
     @property
     def is_graded(self):
         return self.status not in ('QU', 'P', 'G')
 
-    @cached_property
-    def contest_key(self):
-        if hasattr(self, 'contest'):
-            return self.contest_object.key
+    # @cached_property
+    # def contest_key(self):
+    #     if hasattr(self, 'contest'):
+    #         return self.contest_object.key
 
     def __str__(self):
         return 'Submission %d of %s by %s' % (self.id, self.problem, self.user.username)

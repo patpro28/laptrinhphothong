@@ -1,22 +1,23 @@
 import hmac
 import json
 import logging
-import urllib
 import threading
 import time
+import urllib
 from collections import deque, namedtuple
 from operator import itemgetter
 
-from django.core.exceptions import ValidationError
-from django.core.validators import URLValidator
 from django import db
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.utils import timezone
 
 from judge import event_poster as event
 from judge.bridge.base_handler import ZlibPacketHandler, proxy_list
 from judge.caching import finished_submission
-from judge.models import Judge, Language, LanguageLimit, Problem, RuntimeVersion, Submission, SubmissionTestCase
+from judge.models import (Judge, Language, LanguageLimit, Problem,
+                          RuntimeVersion, Submission, SubmissionTestCase)
 
 logger = logging.getLogger('judge.bridge')
 json_log = logging.getLogger('judge.json.bridge')
@@ -636,7 +637,7 @@ class JudgeHandler(ZlibPacketHandler):
             data = self._submission_cache
         else:
             self._submission_cache = data = Submission.objects.filter(id=id).values(
-                'problem__is_public', 'contest_object_id',
+                'problem__is_public', # 'contest_object_id',
                 'user_id', 'problem_id', 'status', 'language__key',
             ).get()
             self._submission_cache_id = id
@@ -645,7 +646,7 @@ class JudgeHandler(ZlibPacketHandler):
             event.post('submissions', {
                 'type': 'done-submission' if done else 'update-submission',
                 'state': state, 'id': id,
-                'contest': data['contest_object_id'],
+                # 'contest': data['contest_object_id'],
                 'user': data['user_id'], 'problem': data['problem_id'],
                 'status': data['status'], 'language': data['language__key'],
             })

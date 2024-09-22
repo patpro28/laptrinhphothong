@@ -315,86 +315,92 @@
         </defs>
     </svg>
 
-    {% include 'navbar.html' %}
     <noscript>
         <div id="noscript">{{ _('This site works best with JavaScript enabled.') }}</div>
     </noscript>
-    <div class="flex flex-col min-h-screen ml-24 transition-all duration-500 ease-in-out bg-slate-100 lg:ml-32">
-        <div class="sticky top-0 z-50 flex items-center justify-between px-4 py-4 bg-white">
-            <div class="text-3xl font-bold line-clamp-1 title_row">
-                {% block title_row %}
-                {% if content_title %}{{ content_title }}{% else %}{{ title }}{% endif %}
-                {% endblock title_row %}
-            </div>
-            <div class="flex items-center space-x-6">
-                <div>
-                    <a href="javascript:void(0)" onclick="submit_language('vi')" class="">
-                        <img src="{{ static('icons/vn_flag.svg') }}" alt="vn" class="object-cover w-6 h-4">
-                    </a>
-                </div>
-                <div>
-                    <a href="javascript:void(0)" onclick="submit_language('en')" class="">
-                        <img src="{{ static('icons/us_flag.svg') }}" alt="vn" class="object-cover w-6 h-4">
-                    </a>
-                </div>
-                {% if request.user.is_authenticated %}
-                <div class="relative group">
-                    <a class="flex items-center space-x-2" href="{{ url('user_page') }}">
-                        <img class="w-10 h-10 border-2 rounded-full" src="{{ gravatar(request.user, 80) }}"
-                            alt="{{ request.user.username }}">
-                        <div class="w-0 overflow-hidden text-lg transition-all duration-500 ease-in-out lg:w-fit">
-                            <span>Hello, </span>
-                            <span class="font-bold">{{ request.user.username }}</span>
-                            <span><i class="fa-solid fa-caret-down"></i></span>
+    <div class="h-full">
+        <div class="relative z-0 flex w-full h-full overflow-hidden">
+            {% include 'navbar.html' %}
+            <div class="relative flex flex-col flex-1 h-full max-w-full min-h-screen overflow-hidden">
+                <main class="flex flex-col flex-1 overflow-auto transition-[width] duration-300 ease-in-out bg-slate-100">
+                    <div class="sticky top-0 z-50 flex items-center justify-between px-4 py-4 bg-white">
+                        <div class="text-3xl font-bold line-clamp-1 title_row">
+                            {% block title_row %}
+                            {% if content_title %}{{ content_title }}{% else %}{{ title }}{% endif %}
+                            {% endblock title_row %}
                         </div>
-                    </a>
-                    <div
-                        class="absolute rounded-md max-h-0 overflow-hidden min-w-fit transition-[max-height] duration-500 ease-in-out group-hover:max-h-80 [&>*]:whitespace-nowrap flex flex-col right-0 bg-indigo-900/75 w-full text-white divide-y [&>*]:p-3">
-                        <a href="{{ url('user_edit_profile', request.user.username) }}" class="hover:bg-indigo-900">Edit
-                            profile</a>
-                        <a href="{{ url('auth_logout') }}" class="hover:bg-indigo-900">Logout</a>
+                        <div class="flex items-center space-x-6">
+                            <div>
+                                <a href="javascript:void(0)" onclick="submit_language('vi')" class="">
+                                    <img src="{{ static('icons/vn_flag.svg') }}" alt="vn" class="object-cover w-6 h-4">
+                                </a>
+                            </div>
+                            <div>
+                                <a href="javascript:void(0)" onclick="submit_language('en')" class="">
+                                    <img src="{{ static('icons/us_flag.svg') }}" alt="vn" class="object-cover w-6 h-4">
+                                </a>
+                            </div>
+                            {% if request.user.is_authenticated %}
+                            <div class="relative group">
+                                <a class="flex items-center space-x-2" href="{{ url('user_page') }}">
+                                    <img class="w-10 h-10 border-2 rounded-full" src="{{ gravatar(request.user, 80) }}"
+                                        alt="{{ request.user.username }}">
+                                    <div class="w-0 overflow-hidden text-lg transition-all duration-500 ease-in-out lg:w-fit">
+                                        <span>Hello, </span>
+                                        <span class="font-bold">{{ request.user.username }}</span>
+                                        <span><i class="fa-solid fa-caret-down"></i></span>
+                                    </div>
+                                </a>
+                                <div
+                                    class="absolute rounded-md max-h-0 overflow-hidden min-w-fit transition-[max-height] duration-500 ease-in-out group-hover:max-h-80 [&>*]:whitespace-nowrap flex flex-col right-0 bg-indigo-900/75 w-full text-white divide-y [&>*]:p-3">
+                                    <a href="{{ url('user_edit_profile', request.user.username) }}" class="hover:bg-indigo-900">Edit
+                                        profile</a>
+                                    <a href="{{ url('auth_logout') }}" class="hover:bg-indigo-900">Logout</a>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div>
+                                <a href="{{ url('auth_login') }}?next={{ LOGIN_RETURN_PATH|urlencode }}"
+                                    class="font-bold text-black whitespace-nowrap">
+                                    {{ _('Sign in') }}</a>
+                            </div>
+                            {% if open_register %}
+                            <div>
+                                <a href="{{ url('registration_register') }}" class="font-bold whitespace-nowrap">{{ _('Sign up') }}</a>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                {% else %}
-                <div>
-                    <a href="{{ url('auth_login') }}?next={{ LOGIN_RETURN_PATH|urlencode }}"
-                        class="font-bold text-black whitespace-nowrap">
-                        {{ _('Sign in') }}</a>
-                </div>
-                {% if open_register %}
-                <div>
-                    <a href="{{ url('registration_register') }}" class="font-bold whitespace-nowrap">{{ _('Sign up') }}</a>
-                </div>
+                    <div class="flex items-center p-4">
+                        {% block action_row %}
+                        {% endblock %}
+                        {% block header %}{% endblock %}
+                    </div>
+                    {% block title_ruler %}
+                    {% endblock %}
+                    <div id="content-body" class="flex-1 p-4">{% block body %}{% endblock %}</div>
+                </main>
+            
+                {% if i18n_config.announcement %}
+                <div id="announcement">{{ i18n_config.announcement|safe }}</div>
                 {% endif %}
-                {% endif %}
+            
+                {% block bodyend %}{% endblock %}
+                <form action="{{ url('set_language') }}" method="post" id="set_language" class="hidden">
+                    {% csrf_token %}
+                    <select name="language" id="language" onchange="this.form.submit()">
+                        {% for language in language_info_list(LANGUAGES) %}
+                        <option value="{{ language.code }}" {% if language.code==LANGUAGE_CODE %}selected{% endif %}>
+                            {{ language.name_local }} ({{ language.code }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <input name="next" type="hidden" value="{{ request.get_full_path() }}">
+                </form>
             </div>
         </div>
-        <div class="flex items-center p-4">
-            {% block action_row %}
-            {% endblock %}
-            {% block header %}{% endblock %}
-        </div>
-        {% block title_ruler %}
-        {% endblock %}
-        <div id="content-body" class="flex-1 p-4">{% block body %}{% endblock %}</div>
     </div>
-
-    {% if i18n_config.announcement %}
-    <div id="announcement">{{ i18n_config.announcement|safe }}</div>
-    {% endif %}
-
-    {% block bodyend %}{% endblock %}
-    <form action="{{ url('set_language') }}" method="post" id="set_language" class="hidden">
-        {% csrf_token %}
-        <select name="language" id="language" onchange="this.form.submit()">
-            {% for language in language_info_list(LANGUAGES) %}
-            <option value="{{ language.code }}" {% if language.code==LANGUAGE_CODE %}selected{% endif %}>
-                {{ language.name_local }} ({{ language.code }})
-            </option>
-            {% endfor %}
-        </select>
-        <input name="next" type="hidden" value="{{ request.get_full_path() }}">
-    </form>
 </body>
 
 </html>
